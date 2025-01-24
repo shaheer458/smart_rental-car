@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node", // "node" is the typical setting for modern JS/TS projects
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve", // Keep JSX as-is for Next.js to handle properly
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "components/context/ProductsProvider.jsx",  // Ensure that this JSX file is actually included in your project
+    "app/favour"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
