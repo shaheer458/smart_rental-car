@@ -35,13 +35,31 @@ const CarRentalPayment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior
 
+    // Validate required fields before proceeding with the submission
+    if (!fullName || !email || !phone || !carModel || rentalDuration <= 0 || !paymentMethod) {
+      setMessage('Please fill in all required fields.');
+      return;
+    }
+
     // Define payment details based on selected payment method
     let paymentDetails = {};
     if (paymentMethod === 'creditCard') {
+      if (!creditCard || !expiryDate || !cvv) {
+        setMessage('Please provide all credit card details.');
+        return;
+      }
       paymentDetails = { creditCardDetails: { cardNumber: creditCard, expiryDate, cvv } };
-    } else if (paymentMethod === 'jazzCash') {
+    } else if (paymentMethod === 'jazzcash') {
+      if (!jazzCashDetails) {
+        setMessage('Please provide your JazzCash details.');
+        return;
+      }
       paymentDetails = { jazzCashDetails };
     } else if (paymentMethod === 'easypaisa') {
+      if (!easyPaisaDetails) {
+        setMessage('Please provide your EasyPaisa details.');
+        return;
+      }
       paymentDetails = { easyPaisaDetails };
     }
 

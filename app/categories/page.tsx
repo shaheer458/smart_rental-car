@@ -1,13 +1,23 @@
 'use client';
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { client } from '@/sanity/lib/client'; // Assuming you have Sanity client set up
 import Image from 'next/image';
 import Link from 'next/link';
-import debounce from 'lodash/debounce'; // Import debounce function directly for better tree-shaking
+
+// Define types for the car data
+interface Car {
+  _id: string;
+  name: string;
+  type: string;
+  fuelCapacity: string;
+  transmission: string;
+  seatingCapacity: number;
+  pricePerDay: string;
+  image_url: string;
+}
 
 // Function to fetch car data by type
-const fetchCarsByType = async (type) => {
+const fetchCarsByType = async (type: string): Promise<Car[]> => {
   const query = `*[_type == "carData" && type == $type] {
     _id,
     name,
@@ -30,9 +40,9 @@ const fetchCarsByType = async (type) => {
 };
 
 const CategoriesPage = () => {
-  const [carTypes, setCarTypes] = useState([]);
-  const [selectedType, setSelectedType] = useState(null);
-  const [cars, setCars] = useState([]);
+  const [carTypes, setCarTypes] = useState<string[]>([]);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch all car types only once
@@ -42,36 +52,33 @@ const CategoriesPage = () => {
         type
       }`;
       const allCars = await client.fetch(query);
-      const uniqueTypes = [...new Set(allCars.map((car) => car.type))]; // Get unique car types
+      const uniqueTypes = [...new Set(allCars.map((car: { type: string }) => car.type))]; // Get unique car types
       setCarTypes(uniqueTypes);
     };
 
     fetchCarTypes();
   }, []);
 
-  // Debounced handler to fetch cars by type
-  const handleTypeClick = useCallback(
-    debounce(async (type) => {
-      setSelectedType(type);
-      setLoading(true); // Show loading indicator
-      const fetchedCars = await fetchCarsByType(type);
-      setCars(fetchedCars);
-      setLoading(false); // Hide loading indicator
-    }, 300),
-    [] // Ensure this callback is only created once
-  );
+  // Direct handler to fetch cars by type (without debounce)
+  const handleTypeClick = async (type: string) => {
+    setSelectedType(type);
+    setLoading(true); // Show loading indicator
+    const fetchedCars = await fetchCarsByType(type);
+    setCars(fetchedCars);
+    setLoading(false); // Hide loading indicator
+  };
 
   // Memoized Car Card to avoid unnecessary re-renders
-  const CarCard = React.memo(({ car }) => (
+  const CarCard: React.FC<{ car: Car }> = React.memo(({ car }) => (
     <div key={car._id} className="car-card bg-white p-4 rounded-lg shadow-md">
       {/* Image Container */}
       <div className="relative w-full h-40 mb-4">
         <Image
           src={car.image_url || '/placeholder.png'}
           alt={car.name}
-          width={600}  // Ensure optimal width for large devices
+          width={600} // Ensure optimal width for large devices
           height={400} // Maintain aspect ratio
-          quality={75}  // Adjust image quality for performance
+          quality={75} // Adjust image quality for performance
           objectFit="cover"
           loading="lazy"
           className="rounded-lg"
@@ -97,26 +104,26 @@ const CategoriesPage = () => {
   ));
 
   // Memoizing car types to avoid unnecessary re-renders
-  const carTypesList = useMemo(() => {
-    return carTypes.map((type) => (
-      <button
-        key={type}
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-        onClick={() => handleTypeClick(type)} // Trigger fetch on click
-      >
-        {type}
-      </button>
-    ));
-  }, [carTypes]); // Only recompute if carTypes change
+  const carTypesList = useMemo(
+    () =>
+      carTypes.map((type) => (
+        <button
+          key={type}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+          onClick={() => handleTypeClick(type)} // Trigger fetch on click
+        >
+          {type}
+        </button>
+      )),
+    [carTypes]
+  ); // Only recompute if carTypes change
 
   return (
     <div className="categories-page w-full flex flex-col items-center p-4">
       <h1 className="text-2xl font-semibold mb-6">Car Categories</h1>
 
       {/* Display list of car types */}
-      <div className="car-types flex flex-wrap gap-4 mb-8">
-        {carTypesList}
-      </div>
+      <div className="car-types flex flex-wrap gap-4 mb-8">{carTypesList}</div>
 
       {/* Display loading indicator */}
       {loading && <div>Loading cars...</div>}

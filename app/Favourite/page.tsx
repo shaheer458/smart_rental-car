@@ -35,6 +35,7 @@ const FavoritesPage = () => {
     if (favorites.length === 0) return; // Skip fetching if no favorites
 
     setLoading(true); // Start loading when fetching data
+
     const fetchFavoriteCars = async () => {
       const start = (page - 1) * carsPerPage;
       const end = start + carsPerPage;
@@ -77,43 +78,43 @@ const FavoritesPage = () => {
         className="w-full h-32 object-cover rounded-t-lg"
         loading="lazy"
       />
-                    <div className="flex gap-3 items-center justify-center">
-  {/* Fuel Capacity */}
-  <div className="flex">
-    <img
-      loading="lazy"
-      src="https://cdn.builder.io/api/v1/image/assets/TEMP/bb9f5fa088a33a8329469c11ed8f42f7df3e0fd11b9aa0921af94d8d3307f051?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
-      alt="Fuel Icon"
-      width={24}
-      height={24}
-    />
-    <p className="text-sm text-gray-600">{car.fuelCapacity}</p>
-  </div>
+      <div className="flex gap-3 items-center justify-center">
+        {/* Fuel Capacity */}
+        <div className="flex">
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/bb9f5fa088a33a8329469c11ed8f42f7df3e0fd11b9aa0921af94d8d3307f051?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
+            alt="Fuel Icon"
+            width={24}
+            height={24}
+          />
+          <p className="text-sm text-gray-600">{car.fuelCapacity}</p>
+        </div>
 
-  {/* Transmission */}
-  <div className="flex">
-    <img
-      loading="lazy"
-      src="https://cdn.builder.io/api/v1/image/assets/TEMP/563fd9367e8be9e271233fa362e88c8b2205c920475aad51a787f2599d87477e?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df" // Update this URL to a transmission icon
-      alt="Transmission Icon"
-      width={24}
-      height={24}
-    />
-    <p className="text-sm text-gray-600">{car.transmission}</p>
-  </div>
+        {/* Transmission */}
+        <div className="flex">
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/563fd9367e8be9e271233fa362e88c8b2205c920475aad51a787f2599d87477e?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
+            alt="Transmission Icon"
+            width={24}
+            height={24}
+          />
+          <p className="text-sm text-gray-600">{car.transmission}</p>
+        </div>
 
-  {/* Seating Capacity */}
-  <div className="flex">
-    <img
-      loading="lazy"
-      src="https://cdn.builder.io/api/v1/image/assets/TEMP/fd12c9762ffaa585959a2bb1c514f631f14a3524f88d9c2bd9d3da13bf9fa3d9?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df" // Update this URL to a seating capacity icon
-      alt="Capacity Icon"
-      width={24}
-      height={24}
-    />
-    <p className="text-sm text-gray-600">{car.seatingCapacity}</p>
-  </div>
-</div>
+        {/* Seating Capacity */}
+        <div className="flex">
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/fd12c9762ffaa585959a2bb1c514f631f14a3524f88d9c2bd9d3da13bf9fa3d9?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
+            alt="Capacity Icon"
+            width={24}
+            height={24}
+          />
+          <p className="text-sm text-gray-600">{car.seatingCapacity}</p>
+        </div>
+      </div>
       <div className="mt-2">
         <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
       </div>
@@ -135,7 +136,7 @@ const FavoritesPage = () => {
   // Memoized car components
   const carComponents = useMemo(() => {
     return favoriteCarsData.map((car) => <CarCard key={car._id} car={car} />);
-  }, [favoriteCarsData, CarCard]); // Add CarCard to dependencies
+  }, [favoriteCarsData]); // Add CarCard to dependencies
 
   // Pagination controls
   const handleLoadMore = useCallback(() => {
