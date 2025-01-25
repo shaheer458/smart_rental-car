@@ -4,10 +4,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { client } from '@/sanity/lib/client'; // Assuming you have Sanity client set up
 import Image from 'next/image';
 import Link from 'next/link';
-import debounce from 'lodash/debounce'; // Import debounce function directly for better tree-shaking
 
 // Function to fetch car data by type
-const fetchCarsByType = async (type) => {
+const fetchCarsByType = async (type : any) => {
   const query = `*[_type == "carData" && type == $type] {
     _id,
     name,
@@ -49,17 +48,14 @@ const CategoriesPage = () => {
     fetchCarTypes();
   }, []);
 
-  // Debounced handler to fetch cars by type
-  const handleTypeClick = useCallback(
-    debounce(async (type) => {
-      setSelectedType(type);
-      setLoading(true); // Show loading indicator
-      const fetchedCars = await fetchCarsByType(type);
-      setCars(fetchedCars);
-      setLoading(false); // Hide loading indicator
-    }, 300),
-    [] // Ensure this callback is only created once
-  );
+  // Direct handler to fetch cars by type (without debounce)
+  const handleTypeClick = async (type) => {
+    setSelectedType(type);
+    setLoading(true); // Show loading indicator
+    const fetchedCars = await fetchCarsByType(type);
+    setCars(fetchedCars);
+    setLoading(false); // Hide loading indicator
+  };
 
   // Memoized Car Card to avoid unnecessary re-renders
   const CarCard = React.memo(({ car }) => (
