@@ -16,7 +16,7 @@ const SearchPage = () => {
 
   // Define the GROQ query for fetching cars
   const searchQuery = `
-    *[_type == "carDataTypes" && name match $query] {
+    *[_type == "carDataTypes" && name match $searchQuery] {
       _id,
       name,
       type,
@@ -33,7 +33,7 @@ const SearchPage = () => {
     try {
       setLoading(true); 
       setError(null); 
-      const results = await client.fetch(searchQuery, { query: `${query}*` });
+      const results = await client.fetch(searchQuery, { searchQuery: `${query}*` });
       setCars(results);
     } catch (err) {
       console.error('Error fetching cars:', err);
