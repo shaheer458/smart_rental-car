@@ -16,34 +16,12 @@ interface Car {
   image_url: string;
 }
 
-// Function to fetch car data by type
-const fetchCarsByType = async (type: string): Promise<Car[]> => {
-  const query = `*[_type == "carData" && type == $type] {
-    _id,
-    name,
-    type,
-    fuelCapacity,
-    transmission,
-    seatingCapacity,
-    pricePerDay,
-    "image_url": image.asset->url
-  }`;
-
-  const params = { type };
-  try {
-    const cars = await client.fetch(query, params);
-    return cars;
-  } catch (error) {
-    console.error('Error fetching cars:', error);
-    return []; // Return empty array if there's an error
-  }
-};
-
 const CategoriesPage = () => {
   const [carTypes, setCarTypes] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); // To handle errors
 
   // Fetch all car types only once
   useEffect(() => {
@@ -51,34 +29,71 @@ const CategoriesPage = () => {
       const query = `*[_type == "carData"] | order(type) {
         type
       }`;
-      const allCars = await client.fetch(query);
-      const uniqueTypes = [...new Set(allCars.map((car: { type: string }) => car.type))]; // Get unique car types
-      setCarTypes(uniqueTypes);
+      try {
+        const allCars = await client.fetch(query);
+        const uniqueTypes: string[] = [];
+
+        allCars.forEach((car: { type: string }) => {
+          if (!uniqueTypes.includes(car.type)) {
+            uniqueTypes.push(car.type);
+          }
+        });
+
+        setCarTypes(uniqueTypes);
+      } catch (error) {
+        setError('Failed to load car types. Please try again later.');
+      }
     };
 
     fetchCarTypes();
   }, []);
 
-  // Direct handler to fetch cars by type (without debounce)
+  const fetchCarsByType = async (type: string): Promise<Car[]> => {
+    const query = `*[_type == "carData" && type == $type] {
+      _id,
+      name,
+      type,
+      fuelCapacity,
+      transmission,
+      seatingCapacity,
+      pricePerDay,
+      "image_url": image.asset->url
+    }`;
+
+    const params = { type };
+    try {
+      const cars = await client.fetch(query, params);
+      return cars;
+    } catch (error) {
+      console.error('Error fetching cars:', error);
+      return [];
+    }
+  };
+
   const handleTypeClick = async (type: string) => {
     setSelectedType(type);
-    setLoading(true); // Show loading indicator
-    const fetchedCars = await fetchCarsByType(type);
-    setCars(fetchedCars);
-    setLoading(false); // Hide loading indicator
+    setLoading(true);
+    setError(null); // Reset error before fetching
+    try {
+      const fetchedCars = await fetchCarsByType(type);
+      setCars(fetchedCars);
+    } catch (error) {
+      setError('Failed to load cars for this type.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Memoized Car Card to avoid unnecessary re-renders
   const CarCard: React.FC<{ car: Car }> = React.memo(({ car }) => (
     <div key={car._id} className="car-card bg-white p-4 rounded-lg shadow-md">
-      {/* Image Container */}
       <div className="relative w-full h-40 mb-4">
         <Image
           src={car.image_url || '/placeholder.png'}
           alt={car.name}
-          width={600} // Ensure optimal width for large devices
-          height={400} // Maintain aspect ratio
-          quality={75} // Adjust image quality for performance
+          width={600}
+          height={400}
+          quality={75}
           objectFit="cover"
           loading="lazy"
           className="rounded-lg"
@@ -94,7 +109,7 @@ const CategoriesPage = () => {
         <Link href={`/payment?carId=${car._id}`}>
           <button
             className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-            aria-label={`Rent ${car.name} now`}  // car is available here
+            aria-label={`Rent ${car.name} now`}
           >
             Rent Now
           </button>
@@ -103,32 +118,33 @@ const CategoriesPage = () => {
     </div>
   ));
 
-  // Memoizing car types to avoid unnecessary re-renders
+  CarCard.displayName = 'CarCard';
+
+  // Memoized car types to avoid unnecessary re-renders
   const carTypesList = useMemo(
     () =>
       carTypes.map((type) => (
         <button
           key={type}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-          onClick={() => handleTypeClick(type)} // Trigger fetch on click
+          className={`px-4 py-2 rounded-lg ${selectedType === type ? 'bg-blue-700' : 'bg-blue-500'}`}
+          onClick={() => handleTypeClick(type)}
         >
           {type}
         </button>
       )),
-    [carTypes]
-  ); // Only recompute if carTypes change
+    [carTypes, selectedType] // Recompute only if carTypes or selectedType change
+  );
 
   return (
     <div className="categories-page w-full flex flex-col items-center p-4">
       <h1 className="text-2xl font-semibold mb-6">Car Categories</h1>
 
-      {/* Display list of car types */}
       <div className="car-types flex flex-wrap gap-4 mb-8">{carTypesList}</div>
 
-      {/* Display loading indicator */}
-      {loading && <div>Loading cars...</div>}
+      {loading && <div className="loading-spinner">Loading cars...</div>}
 
-      {/* Display cars based on selected type */}
+      {error && <div className="error-message text-red-500">{error}</div>}
+
       {selectedType && (
         <div className="car-details">
           <h2 className="text-xl font-semibold mb-4">{selectedType} Cars</h2>

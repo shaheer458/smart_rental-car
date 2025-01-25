@@ -14,7 +14,7 @@ export default {
         name: 'email',
         title: 'Email',
         type: 'string',
-        validation: Rule => Rule.email().required(),
+        // validation: Rule => Rule.email().required(),
       },
       {
         name: 'password',

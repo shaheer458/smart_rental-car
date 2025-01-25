@@ -18,11 +18,11 @@ export default function Header() {
     setIsFavorite((prevState) => !prevState);
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e : any) => {
     setSearchQuery(e.target.value);
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e : any) => {
     if (e.key === 'Enter' || e.type === 'click') {
       if (searchQuery.trim()) {
         // Redirect to the search results page with the search query

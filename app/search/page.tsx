@@ -1,24 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';  // to get query params from URL
-import { client } from '@/sanity/lib/client'; // Ensure you have a correct Sanity client setup
+import { useSearchParams } from 'next/navigation'; 
+import { client } from '@/sanity/lib/client'; 
 import Image from 'next/image';
 
 const SearchPage = () => {
   const [cars, setCars] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null); 
   const searchParams = useSearchParams();
-  const query = searchParams.get('query') || '';  // Get the query from the URL
+  
+  // Get the query from the URL, default to empty string if not found
+  const query = searchParams.get('query') || ''; 
 
-  useEffect(() => {
-    if (query.trim() === '') {
-      setLoading(false);
-      return; // Don't fetch if the query is empty
-    }
-
-    // Sanity query to fetch car data based on search query
-    const searchQuery = `*[_type == "carDataTypes" && name match $query] {
+  // Define the GROQ query for fetching cars
+  const searchQuery = `
+    *[_type == "carDataTypes" && name match $query] {
       _id,
       name,
       type,
@@ -27,20 +25,32 @@ const SearchPage = () => {
       seatingCapacity,
       pricePerDay,
       "image_url": image.asset->url
-    }`;
+    }
+  `;
 
-    const fetchCarsByQuery = async () => {
-      try {
-        const results = await client.fetch(searchQuery, { query: `${query}*` });
-        setCars(results);
-      } catch (error) {
-        console.error('Error fetching cars:', error.message || error);
-        setCars([]);
-      }
+  // Function to fetch the cars based on the query
+  const fetchCars = async (query: string) => {
+    try {
+      setLoading(true); 
+      setError(null); 
+      const results = await client.fetch(searchQuery, { query: `${query}*` });
+      setCars(results);
+    } catch (err) {
+      console.error('Error fetching cars:', err);
+      setError('Failed to load search results. Please try again.');
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchCarsByQuery();
+  // Fetch cars whenever the query changes or when the page is loaded
+  useEffect(() => {
+    if (query.trim()) {
+      fetchCars(query);
+    } else {
+      setCars([]); // Clear the cars if the query is empty
+      setLoading(false); 
+    }
   }, [query]);
 
   return (
@@ -51,6 +61,8 @@ const SearchPage = () => {
 
       {loading ? (
         <div>Loading...</div>
+      ) : error ? (
+        <div className="text-red-500">{error}</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {cars.length > 0 ? (
@@ -58,7 +70,7 @@ const SearchPage = () => {
               <div key={car._id} className="car-card bg-white p-4 rounded-lg shadow-md">
                 <div className="relative w-full h-40 mb-4">
                   <Image
-                    src={car.image_url || '/placeholder.png'} // Use fallback image if image_url is empty
+                    src={car.image_url || '/placeholder.png'} // Fallback image
                     alt={car.name}
                     width={600}
                     height={400}
@@ -72,7 +84,7 @@ const SearchPage = () => {
                 <p className="text-sm text-gray-600">Fuel Capacity: {car.fuelCapacity}</p>
                 <p className="text-sm text-gray-600">Transmission: {car.transmission}</p>
                 <p className="text-sm text-gray-600">Seating Capacity: {car.seatingCapacity}</p>
-                <p className="text-sm text-gray-600">Price per day: {car.pricePerDay}</p>
+                <p className="text-sm text-gray-600">Price per day: ${car.pricePerDay}</p>
               </div>
             ))
           ) : (

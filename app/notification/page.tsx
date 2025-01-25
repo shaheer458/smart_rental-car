@@ -8,25 +8,27 @@ export default function NotificationPage() {
   const [loading, setLoading] = useState<boolean>(true); // Loading state for async tasks
 
   useEffect(() => {
-    const fetchData = () => {
-      try {
-        // Retrieve form data from localStorage
-        const storedData = localStorage.getItem('formData');
+    if (typeof window !== 'undefined') { // Ensure we are in the browser environment
+      const fetchData = () => {
+        try {
+          // Retrieve form data from localStorage
+          const storedData = localStorage.getItem('formData');
 
-        // If the data exists in localStorage, parse and set it
-        if (storedData) {
-          setFormData(JSON.parse(storedData));
-        } else {
-          setError('No booking data found. Please make sure you have submitted a booking.');
+          // If the data exists in localStorage, parse and set it
+          if (storedData) {
+            setFormData(JSON.parse(storedData));
+          } else {
+            setError('No booking data found. Please make sure you have submitted a booking.');
+          }
+        } catch (e) {
+          setError('Failed to load booking data. Please try again later.');
+        } finally {
+          setLoading(false); // Mark loading as complete
         }
-      } catch (e) {
-        setError('Failed to load booking data. Please try again later.');
-      } finally {
-        setLoading(false); // Mark loading as complete
-      }
-    };
+      };
 
-    fetchData();
+      fetchData();
+    }
   }, []);
 
   // Display error, loading, or the form data
@@ -58,7 +60,7 @@ export default function NotificationPage() {
           {Object.entries(formData).map(([key, value]) => (
             <tr key={key}>
               <td className="py-2 px-4 border-b font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</td>
-              <td className="py-2 px-4 border-b">{value || 'Not Provided'}</td>
+              <td className="py-2 px-4 border-b">{value != null && value !== '' ? String(value) : 'Not Provided'}</td>
             </tr>
           ))}
         </tbody>

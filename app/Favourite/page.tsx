@@ -27,12 +27,16 @@ const FavoritesPage = () => {
     const favoriteCarIds = Object.keys(parsedFavorites).filter(
       (carId) => parsedFavorites[carId]
     );
+
+    console.log("Favorite Car IDs:", favoriteCarIds); // Check if favorites are fetched correctly
     setFavorites(favoriteCarIds); // Store the ids in state
-  }, []);
+  }, []); // Empty dependency array, runs once on mount
 
   // Fetch car data only if favorite cars exist
   useEffect(() => {
     if (favorites.length === 0) return; // Skip fetching if no favorites
+
+    console.log("Fetching favorite cars..."); // Debugging fetch
 
     setLoading(true); // Start loading when fetching data
 
@@ -41,7 +45,12 @@ const FavoritesPage = () => {
       const end = start + carsPerPage;
       const favoriteCarIdsToFetch = favorites.slice(start, end);
 
-      const query = `*[_type == "carData" && _id in $carIds] {
+      console.log("Favorite Car IDs to fetch:", favoriteCarIdsToFetch); // Log favorite car ids to fetch
+
+      if (favoriteCarIdsToFetch.length === 0) return; // No more cars to load
+
+      // Updated query for the correct document type
+      const query = `*[_type == "carDataTypes" && _id in $carIds] {
         _id,
         name,
         type,
@@ -54,6 +63,7 @@ const FavoritesPage = () => {
 
       try {
         const data = await client.fetch(query, { carIds: favoriteCarIdsToFetch });
+        console.log("Fetched data:", data); // Log fetched car data
         setFavoriteCarsData((prevData) => [...prevData, ...data]); // Append new data to existing data
       } catch (error) {
         console.error("Error fetching favorite cars data:", error);
@@ -64,7 +74,7 @@ const FavoritesPage = () => {
     };
 
     fetchFavoriteCars();
-  }, [favorites, page]); // Fetch data when favorites or page changes
+  }, [favorites, page, carsPerPage]); // Added carsPerPage as a dependency
 
   // Memoized function to render each car (use React.memo for child components)
   const CarCard = React.memo(({ car }: { car: any }) => (
@@ -133,10 +143,13 @@ const FavoritesPage = () => {
     </div>
   ));
 
+  // Add displayName to the memoized CarCard component
+  CarCard.displayName = "CarCard";
+
   // Memoized car components
   const carComponents = useMemo(() => {
     return favoriteCarsData.map((car) => <CarCard key={car._id} car={car} />);
-  }, [favoriteCarsData]); // Add CarCard to dependencies
+  }, [favoriteCarsData, CarCard]);
 
   // Pagination controls
   const handleLoadMore = useCallback(() => {

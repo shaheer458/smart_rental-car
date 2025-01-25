@@ -7,7 +7,7 @@ const CarRentalPayment = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [carModel, setCarModel] = useState('');
+  const [carModel, setCarModel] = useState<"sedan" | "suv" | "convertible" | "pickup" | "">(''); // Restrict to specific car models
   const [rentalDuration, setRentalDuration] = useState(1);
   const [creditCard, setCreditCard] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -18,7 +18,7 @@ const CarRentalPayment = () => {
   const [easyPaisaDetails, setEasyPaisaDetails] = useState('');
   const [message, setMessage] = useState(''); // To display success/error messages
 
-  const carPrices = {
+  const carPrices: { [key in "sedan" | "suv" | "convertible" | "pickup"]: number } = {
     sedan: 50,
     suv: 75,
     convertible: 100,
@@ -27,12 +27,15 @@ const CarRentalPayment = () => {
 
   const calculateTotal = () => {
     if (carModel && rentalDuration > 0) {
-      const pricePerDay = carPrices[carModel];
+      // Only calculate if carModel is not an empty string
+      const pricePerDay = carPrices[carModel as "sedan" | "suv" | "convertible" | "pickup"]; // Type assertion to ensure the key exists
       setTotalCost(pricePerDay * rentalDuration);
+    } else {
+      setTotalCost(0); // Reset total cost if carModel is not valid
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e : any) => {
     e.preventDefault(); // Prevent the default form submission behavior
 
     // Validate required fields before proceeding with the submission
@@ -151,7 +154,7 @@ const CarRentalPayment = () => {
               <label className="block text-gray-700">Car Model</label>
               <select
                 value={carModel}
-                onChange={(e) => setCarModel(e.target.value)}
+                onChange={(e) => setCarModel(e.target.value as "sedan" | "suv" | "convertible" | "pickup")}
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg"
               >
@@ -167,7 +170,7 @@ const CarRentalPayment = () => {
               <input
                 type="number"
                 value={rentalDuration}
-                onChange={(e) => setRentalDuration(e.target.value)}
+                onChange={(e) => setRentalDuration(Number(e.target.value))}
                 min="1"
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg"
