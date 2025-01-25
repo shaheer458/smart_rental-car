@@ -1,0 +1,16 @@
+[build]
+command = "npm run build"  # This tells Netlify to run the build command in package.json
+publish = ".next"  # The directory to publish your built files, typically .next for Next.js apps
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"  # Ensures that the Next.js plugin is used for the build
+
+# Optional: If you need environment variables
+[build.environment]
+NODE_ENV = "production"  # Make sure NODE_ENV is set to production
+
+# Optional: Redirects or headers if needed
+[[redirects]]
+from = "/old-url"
+to = "/new-url"
+status = 301
