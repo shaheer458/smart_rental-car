@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { RiSearch2Line } from "react-icons/ri";
 import { IoHome, IoHeartSharp, IoGridSharp } from 'react-icons/io5'; // Correct imports from io5
-import { IoMdSettings } from 'react-icons/io'; // Correct import from io
-
+// import { IoMdSettings } from 'react-icons/io'; // Correct import from io
+import { FaInfoCircle } from 'react-icons/fa';
 import Link from 'next/link';
 
 export default function Header() {
@@ -98,11 +98,11 @@ export default function Header() {
             </div>
           </Link> */}
 
-          <Link href="/contact" aria-label="Go to Settings">
-            <div className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
-              <IoMdSettings className="text-xl text-gray-600" />
-            </div>
-          </Link>
+<Link href="/contact" aria-label="Go to Contact">
+      <div className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
+        <FaInfoCircle className="text-xl text-gray-600" /> {/* Details Icon */}
+      </div>
+    </Link>
 
         </div>
       </nav>

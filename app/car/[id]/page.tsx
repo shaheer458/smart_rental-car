@@ -12,8 +12,9 @@ const CarDetailsPage = ({ params }: { params: { id: string } }) => {
   const [error, setError] = useState<string | null>(null); // Error state
 
   useEffect(() => {
+    console.log('Fetching data for car with ID:', params.id); // Log the ID
     const fetchCarData = async () => {
-      const query = `*[_type == "carData" && _id == $id] {
+      const query = `*[_type == "carDataTypes" && _id == $id] {
         _id,
         name,
         type,
@@ -26,6 +27,7 @@ const CarDetailsPage = ({ params }: { params: { id: string } }) => {
 
       try {
         const data = await client.fetch(query, { id: params.id });
+        console.log('Car data fetched:', data); // Log the fetched data
         if (data.length > 0) {
           setCar(data[0]); // Set the car data if found
         } else {
@@ -42,13 +44,10 @@ const CarDetailsPage = ({ params }: { params: { id: string } }) => {
     fetchCarData(); // Fetch data using the id from params
   }, [params.id]); // Depend on params.id
 
-  // Show loading state while fetching data
   if (loading) return <p>Loading...</p>;
 
-  // Show error message if there's an issue with data fetching
   if (error) return <p>{error}</p>;
 
-  // Show if the car is not found
   if (!car) return <p>Car not found</p>;
 
   return (
