@@ -57,35 +57,43 @@ const CarDetailsPage = ({ params }: { params: { id: string } }) => {
       </Head>
       <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8">{car.name}</h2>
 
-      <div className="flex border rounded-lg p-4 bg-white shadow-lg">
-        {/* Left side: Image */}
-        <div className="w-1/3">
-          <Image
-            src={car.image_url || '/path/to/default-image.jpg'} // Fallback to a default image if no image is available
-            alt={car.name}
-            width={500} // Specify width for next/image
-            height={300} // Specify height for next/image
-            className="w-full h-36 object-cover rounded-lg"
-          />
+      <div className="flex flex-col lg:flex-row border rounded-lg p-4 bg-white shadow-lg">
+        {/* Top: Image */}
+        <div className="car-card bg-white p-4 rounded-lg shadow-md">
+          <div className="relative w-full h-40 mb-4">
+            <Image
+              src={car.image_url || '/placeholder.png'}
+              alt={car.name}
+              width={600}
+              height={400}
+              quality={75}
+              objectFit="cover"
+              loading="lazy"
+              className="rounded-lg"
+            />
+          </div>
+          <h3 className="text-lg font-semibold">{car.name}</h3>
+            <p className="text-sm text-gray-600"><strong>Type:</strong> {car.type}</p>
+            <p className="text-sm text-gray-600"><strong>Fuel Capacity:</strong> {car.fuelCapacity}</p>
+            <p className="text-sm text-gray-600"><strong>Transmission:</strong> {car.transmission}</p>
+            <p className="text-sm text-gray-600"><strong>Seating Capacity:</strong> {car.seatingCapacity}</p>
+            <p className="text-sm text-gray-600"><strong>Price per Day:</strong> {car.pricePerDay}</p>
+          <div className="text-center mt-4">
+            <Link href={`/payment?carId=${car._id}`}>
+              <button
+                className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+                aria-label={`Rent ${car.name} now`}
+              >
+                Rent Now
+              </button>
+            </Link>
+          </div>
         </div>
 
-        {/* Right side: Car Details */}
-        <div className="w-1/3 pl-6"> {/* Adjusted width */}
-          <h3 className="text-lg font-semibold mt-4">{car.name}</h3>
-          <p className="text-sm text-gray-600">{car.type}</p>
-          <p className="text-sm text-gray-600">Fuel Capacity: {car.fuelCapacity}</p>
-          <p className="text-sm text-gray-600">Transmission: {car.transmission}</p>
-          <p className="text-sm text-gray-600">Seating Capacity: {car.seatingCapacity}</p>
-          <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
+        {/* Bottom: Car Details */}
+        <div className="w-full lg:w-2/3 lg:pl-6 mt-4 lg:mt-0">
           
-          {/* Rent Now Button */}
-          <Link href={`/payment?carId=${car._id}`}> 
-            <button 
-              className="gap-2 self-start px-6 py-3 mt-4 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-            >
-              Rent Now
-            </button>
-          </Link>
+
         </div>
       </div>
     </div>

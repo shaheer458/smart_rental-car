@@ -40,7 +40,17 @@ const CarRecommendationPage = () => {
 
       try {
         const data = await client.fetch(query);
-        console.log("Fetched cars:", data); // Debugging log
+        console.log("Fetched cars:", data); // Log to check if data is fetched properly
+
+        if (data.length === 0) {
+          console.log("No cars found"); // Log if no data found
+        }
+
+        // Log image URLs to check if they're correct
+        data.forEach((car : any) => {
+          console.log("Car Image URL:", car.image_url);
+        });
+
         setCars(data);
         setLoading(false);
       } catch (error) {
@@ -49,7 +59,10 @@ const CarRecommendationPage = () => {
       }
     };
 
-    fetchCars();
+    // Call fetchCars function only on the client side
+    if (typeof window !== 'undefined') {
+      fetchCars();
+    }
 
     // Load favorites from localStorage
     const savedFavorites = JSON.parse(localStorage.getItem("favorites") || "{}");
@@ -155,14 +168,14 @@ const CarRecommendationPage = () => {
 
               <div>
                 <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
-                <Link href={`/car/${car._id}`}>
-                  <button
-                    className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-                    aria-label={`Rent ${car.name} now`}
-                  >
-                    Rent Now
-                  </button>
-                </Link>
+                <Link href={`/payment?carName=${car.name}`}>
+  <button
+    className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+    aria-label={`Rent ${car.name} now`}
+  >
+    Rent Now
+  </button>
+</Link>
               </div>
             </div>
           ))

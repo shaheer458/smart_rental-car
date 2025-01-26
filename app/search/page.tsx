@@ -1,18 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation'; 
 import { client } from '@/sanity/lib/client'; 
 import Image from 'next/image';
+import Link from 'next/link';
 
-const SearchPage = () => {
+// Suspense boundary to ensure useSearchParams is executed client-side
+const SearchPageContent = () => {
   const [cars, setCars] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null); 
   const searchParams = useSearchParams();
-  
+
   // Get the query from the URL, default to empty string if not found
-  const query = searchParams.get('query') || ''; 
+  const query = searchParams?.get('query') || ''; 
 
   // Define the GROQ query for fetching cars
   const searchQuery = `
@@ -84,7 +86,19 @@ const SearchPage = () => {
                 <p className="text-sm text-gray-600">Fuel Capacity: {car.fuelCapacity}</p>
                 <p className="text-sm text-gray-600">Transmission: {car.transmission}</p>
                 <p className="text-sm text-gray-600">Seating Capacity: {car.seatingCapacity}</p>
-                <p className="text-sm text-gray-600">Price per day: ${car.pricePerDay}</p>
+                <p className="text-sm text-gray-600">Price per day: {car.pricePerDay}</p>
+
+                {/* Rent Now Button */}
+                <div className="text-center mt-4">
+                  <Link href={`/payment?carId=${car._id}`}>
+                    <button
+                      className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+                      aria-label={`Rent ${car.name} now`}
+                    >
+                      Rent Now
+                    </button>
+                  </Link>
+                </div>
               </div>
             ))
           ) : (
@@ -93,6 +107,15 @@ const SearchPage = () => {
         </div>
       )}
     </div>
+  );
+};
+
+// Wrap the main content in a Suspense boundary for CSR (Client-Side Rendering)
+const SearchPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 };
 

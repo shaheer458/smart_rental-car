@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { client } from '@/sanity/lib/client'; // Import the Sanity client
 
 const CarRentalPayment = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [carModel, setCarModel] = useState<"sedan" | "suv" | "convertible" | "pickup" | "">(''); // Restrict to specific car models
+  const [carModel, setCarModel] = useState<'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport' | ''>('');
   const [rentalDuration, setRentalDuration] = useState(1);
   const [creditCard, setCreditCard] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -16,35 +16,59 @@ const CarRentalPayment = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [jazzCashDetails, setJazzCashDetails] = useState('');
   const [easyPaisaDetails, setEasyPaisaDetails] = useState('');
-  const [message, setMessage] = useState(''); // To display success/error messages
+  const [message, setMessage] = useState('');
+  const [rentalStartDate, setRentalStartDate] = useState<string>('');
+  const [rentalEndDate, setRentalEndDate] = useState<string>('');
 
-  const carPrices: { [key in "sedan" | "suv" | "convertible" | "pickup"]: number } = {
+  const carPrices: { [key in 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport']: number } = {
     sedan: 50,
     suv: 75,
     convertible: 100,
     pickup: 60,
+    diesel: 80,
+    electric: 90,
+    gasoline: 100,
+    hatchback: 70,
+    hybrid: 110,
+    sport: 120,
   };
 
-  const calculateTotal = () => {
+  // Calculate total based on selected car model and rental duration
+  useEffect(() => {
     if (carModel && rentalDuration > 0) {
-      // Only calculate if carModel is not an empty string
-      const pricePerDay = carPrices[carModel as "sedan" | "suv" | "convertible" | "pickup"]; // Type assertion to ensure the key exists
+      const pricePerDay = carPrices[carModel as 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport'];
       setTotalCost(pricePerDay * rentalDuration);
     } else {
-      setTotalCost(0); // Reset total cost if carModel is not valid
+      setTotalCost(0);
     }
+  }, [carModel, rentalDuration]);
+
+  // Check car availability before booking
+  const checkCarAvailability = async (carModel: string, rentalStartDate: string, rentalEndDate: string) => {
+    const query = `*[_type == "booking" && carModel == $carModel && rentalStartDate <= $rentalEndDate && rentalEndDate >= $rentalStartDate]`;
+    const params = { carModel, rentalStartDate, rentalEndDate };
+    const existingBookings = await client.fetch(query, params);
+
+    return existingBookings.length === 0; // If no bookings exist for the given date range, the car is available
   };
 
-  const handleSubmit = async (e : any) => {
-    e.preventDefault(); // Prevent the default form submission behavior
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
 
-    // Validate required fields before proceeding with the submission
-    if (!fullName || !email || !phone || !carModel || rentalDuration <= 0 || !paymentMethod) {
+    // Validate form
+    if (!fullName || !email || !phone || !carModel || !rentalStartDate || !rentalEndDate || rentalDuration <= 0 || !paymentMethod) {
       setMessage('Please fill in all required fields.');
       return;
     }
 
-    // Define payment details based on selected payment method
+    // Check if the car is available
+    const isCarAvailable = await checkCarAvailability(carModel, rentalStartDate, rentalEndDate);
+    if (!isCarAvailable) {
+      setMessage('The selected car is already booked for these dates. Please choose another car or adjust the rental period.');
+      return;
+    }
+
+    // Prepare payment details based on the selected method
     let paymentDetails = {};
     if (paymentMethod === 'creditCard') {
       if (!creditCard || !expiryDate || !cvv) {
@@ -71,19 +95,20 @@ const CarRentalPayment = () => {
       email,
       phone,
       carModel,
+      rentalStartDate,
+      rentalEndDate,
       rentalDuration,
       paymentMethod,
       totalCost,
-      ...paymentDetails, // Spread the payment details based on the selected method
+      ...paymentDetails,
     };
 
     try {
-      // Send booking data to Sanity
       const result = await client.create({
         _type: 'booking',
         ...bookingData,
       });
-      setMessage('Booking successful!'); // Show success message
+      setMessage('Booking successful!');
       console.log('Booking submitted:', result);
 
       // Reset form fields after submission
@@ -91,6 +116,8 @@ const CarRentalPayment = () => {
       setEmail('');
       setPhone('');
       setCarModel('');
+      setRentalStartDate('');
+      setRentalEndDate('');
       setRentalDuration(1);
       setCreditCard('');
       setExpiryDate('');
@@ -100,9 +127,23 @@ const CarRentalPayment = () => {
       setEasyPaisaDetails('');
       setTotalCost(0);
     } catch (error) {
-      setMessage('Error submitting booking. Please try again later.'); // Show error message
+      setMessage('Error submitting booking. Please try again later.');
       console.error('Error submitting booking:', error);
     }
+  };
+
+  // Update rental end date when rental start date or duration changes
+  const handleRentalStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRentalStartDate(e.target.value);
+    const startDate = new Date(e.target.value);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + rentalDuration);
+    setRentalEndDate(endDate.toISOString().split('T')[0]);
+  };
+
+  const handleRentalDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const duration = Number(e.target.value);
+    setRentalDuration(duration);
   };
 
   return (
@@ -154,7 +195,7 @@ const CarRentalPayment = () => {
               <label className="block text-gray-700">Car Model</label>
               <select
                 value={carModel}
-                onChange={(e) => setCarModel(e.target.value as "sedan" | "suv" | "convertible" | "pickup")}
+                onChange={(e) => setCarModel(e.target.value as 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport')}
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg"
               >
@@ -163,6 +204,12 @@ const CarRentalPayment = () => {
                 <option value="suv">SUV</option>
                 <option value="convertible">Convertible</option>
                 <option value="pickup">Pickup</option>
+                <option value="diesel">Diesel</option>
+                <option value="electric">Electric</option>
+                <option value="gasoline">Gasoline</option>
+                <option value="hatchback">Hatchback</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="sport">Sport</option>
               </select>
             </div>
             <div>
@@ -170,19 +217,65 @@ const CarRentalPayment = () => {
               <input
                 type="number"
                 value={rentalDuration}
-                onChange={(e) => setRentalDuration(Number(e.target.value))}
+                onChange={handleRentalDurationChange}
                 min="1"
                 required
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div>
+              <p className="text-gray-700">Price per day: ${carPrices[carModel as 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport']}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Rental Date Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Rental Dates</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-700">Rental Start Date</label>
+              <input
+                type="date"
+                value={rentalStartDate}
+                onChange={handleRentalStartDateChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Rental End Date</label>
+              <input
+                type="date"
+                value={rentalEndDate}
+                readOnly
                 className="w-full p-3 border border-gray-300 rounded-lg"
               />
             </div>
           </div>
         </div>
 
+        {/* Total Cost */}
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-gray-800">Total Cost: ${totalCost.toFixed(2)}</h3>
+        </div>
+
         {/* Payment Method Section */}
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Select Payment Method</h2>
           <div className="space-y-4">
+            <div>
+              <input
+                type="radio"
+                id="creditCard"
+                name="paymentMethod"
+                value="creditCard"
+                checked={paymentMethod === 'creditCard'}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="mr-2"
+              />
+              <label htmlFor="creditCard" className="text-gray-700">Credit Card</label>
+            </div>
             <div>
               <input
                 type="radio"
@@ -210,48 +303,87 @@ const CarRentalPayment = () => {
           </div>
 
           {/* Show Payment Details Based on Selected Method */}
+          {paymentMethod === 'creditCard' && (
+            <div>
+              <div>
+                <label className="block text-gray-700">Credit Card Number</label>
+                <input
+                  type="text"
+                  value={creditCard}
+                  onChange={(e) => setCreditCard(e.target.value)}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">Expiry Date</label>
+                <input
+                  type="text"
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(e.target.value)}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700">CVV</label>
+                <input
+                  type="text"
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value)}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Other Payment Methods */}
           {paymentMethod === 'jazzcash' && (
-            <div className="mt-4">
-              <label className="block text-gray-700">JazzCash Mobile Number</label>
-              <input
-                type="text"
-                value={jazzCashDetails}
-                onChange={(e) => setJazzCashDetails(e.target.value)}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
+            <div>
+              <div>
+                <label className="block text-gray-700">JazzCash Details</label>
+                <input
+                  type="text"
+                  value={jazzCashDetails}
+                  onChange={(e) => setJazzCashDetails(e.target.value)}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
             </div>
           )}
 
           {paymentMethod === 'easypaisa' && (
-            <div className="mt-4">
-              <label className="block text-gray-700">EasyPaisa Account Number</label>
-              <input
-                type="text"
-                value={easyPaisaDetails}
-                onChange={(e) => setEasyPaisaDetails(e.target.value)}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
+            <div>
+              <div>
+                <label className="block text-gray-700">EasyPaisa Details</label>
+                <input
+                  type="text"
+                  value={easyPaisaDetails}
+                  onChange={(e) => setEasyPaisaDetails(e.target.value)}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                />
+              </div>
             </div>
           )}
         </div>
 
-        {/* Total Cost */}
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">Total Cost: ${totalCost.toFixed(2)}</h3>
+        {/* Submit Button */}
+        <div>
+          <button type="submit" className="w-full bg-blue-500 text-white py-3 rounded-lg">
+            Submit Booking
+          </button>
         </div>
-
-        <button
-          type="submit"
-          className="w-full py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600"
-        >
-          Proceed to Payment
-        </button>
       </form>
 
-      {/* Show success or error message */}
-      {message && <p className="mt-4 text-center text-lg">{message}</p>}
+      {/* Message */}
+      {message && (
+        <div className="mt-6 text-center text-lg text-gray-700">
+          {message}
+        </div>
+      )}
     </div>
   );
 };

@@ -39,17 +39,17 @@ const PanelMenu = () => {
   ];
 
   return (
-    <div className="w-[22%] p-4 bg-white hidden lg:flex flex-col justify-between">
+    <div className="w-[22%] p-4 bg-white lg:flex flex-col justify-between">
       {/* Main Menu */}
       <section>
         <p className="text-[#94A7CB66] text-xs font-semibold p-4 tracking-[3px]">
           MAIN MENU
         </p>
-        <ul className="flex flex-wrap h-full">
+        <ul className="flex flex-col">
           {menuItems.map(({ icon, label }, index) => (
             <li
               key={index}
-              className="flex items-center p-4 text-[#90a3bf] rounded-[10px] w-full hover:bg-[#3563E9] hover:text-white duration-300 cursor-pointer"
+              className="flex items-center p-4 text-[#90a3bf] rounded-[10px] mb-2 hover:bg-[#3563E9] hover:text-white duration-300 cursor-pointer"
             >
               {icon}
               <span className="ml-3 font-medium text-base">{label}</span>
@@ -63,18 +63,18 @@ const PanelMenu = () => {
         <p className="text-[#94A7CB66] text-xs font-semibold p-4 tracking-[3px]">
           PREFERENCES
         </p>
-        <ul className="flex flex-wrap h-full">
+        <ul className="flex flex-col">
           {preferencesItems.map(({ icon, label, isSwitch }, index) => (
             <li
               key={index}
-              className="mt-4 flex items-center p-4 text-[#90a3bf] rounded-[10px] w-full hover:bg-[#3563E9] hover:text-white duration-300 cursor-pointer"
+              className="mt-4 flex items-center p-4 text-[#90a3bf] rounded-[10px] mb-2 hover:bg-[#3563E9] hover:text-white duration-300 cursor-pointer"
             >
               {icon}
               {!isSwitch && <span className="ml-3 font-medium text-base">{label}</span>}
 
               {/* Dark Mode Switch */}
               {isSwitch && (
-                <div className="flex justify-between items-center ml-6 bg-[#F6F7F9] rounded-full p-[3px]">
+                <div className="flex justify-between items-center ml-6 bg-[#F6F7F9] rounded-full p-[3px] w-[60px]">
                   <span className="mr-[6px] bg-[#3563E9] p-[3px] rounded-full text-white">
                     <Sun1 />
                   </span>
@@ -87,9 +87,10 @@ const PanelMenu = () => {
           ))}
         </ul>
       </section>
+
       {/* Log Out Section */}
       <section className="mt-12">
-        <div className="mt-4 flex items-center p-4 text-[#90a3bf] rounded-[10px] w-full hover:bg-[#3563E9] hover:text-white duration-300 cursor-pointer">
+        <div className="mt-4 flex items-center p-4 text-[#90a3bf] rounded-[10px] mb-2 hover:bg-[#3563E9] hover:text-white duration-300 cursor-pointer">
           <LogoutCurve />
           <span className="ml-3 font-medium text-base">Log Out</span>
         </div>
