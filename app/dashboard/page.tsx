@@ -3,22 +3,22 @@
 import { client } from '@/sanity/lib/client';
 import React, { useEffect, useState } from 'react';
 
-// Sidebar Component
+
 const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
-  <div className="w-64 h-full bg-gray-800 text-white p-4">
-    <h2 className="text-xl mb-6">Admin Panel</h2>
-    <ul>
-      <li className="mb-4">
-        <a href="/dashboard" className="block">Dashboard</a>
-      </li>
-      <li className="mb-4">
-        <a href="/dashboard/bookings" className="block">Bookings</a>
-      </li>
-      <li className="mb-4">
-        <a href="/dashboard/car-data" className="block">Car Data</a>
+  <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
+    <h2 className="text-xl sm:text-2xl sm:mt-0 mt-4 text-center sm:text-left">Admin Panel</h2>
+    <ul className="sm:flex sm:space-x-6 sm:mt-2 space-y-4 sm:items-center">
+      <li>
+        <a href="/dashboard" className="text-white block text-center sm:text-left">Dashboard</a>
       </li>
       <li>
-        <button onClick={onLogout} className="block w-full mt-6 bg-red-500 text-white py-2 rounded">
+        <a href="/dashboard" className="text-white block text-center sm:text-left">Bookings</a>
+      </li>
+      <li>
+        <a href="/dashboard" className="text-white block text-center sm:text-left">Car Data</a>
+      </li>
+      <li>
+        <button onClick={onLogout} className="bg-red-500 text-white py-2 px-6 rounded block text-center sm:text-left">
           Logout
         </button>
       </li>
@@ -47,7 +47,6 @@ const Dashboard = () => {
     image: null,
   });
 
-  // States for booking data form
   const [bookingData, setBookingData] = useState({
     fullName: '',
     email: '',
@@ -63,27 +62,26 @@ const Dashboard = () => {
   useEffect(() => {
     const isAdmin = localStorage.getItem('admin');
     if (isAdmin !== 'true') {
-      window.location.href = '/login'; // Redirect to login if not authenticated
+      window.location.href = '/login';
     } else {
       setIsAuthenticated(true);
-      fetchBookings(); // Initial fetch for bookings
-      fetchCars(); // Initial fetch for car data
+      fetchBookings();
+      fetchCars();
     }
   }, []);
 
   const fetchBookings = async () => {
     try {
       setLoadingBookings(true);
-      const query = '*[_type == "booking"]'; // Sanity query to fetch all bookings
+      const query = '*[_type == "booking"]';
       const data = await client.fetch(query);
-
       const filteredBookings = data.filter((booking: any) => {
-        const startDate = new Date(booking.rentalStartDate); // Parse start date
-        const today = new Date(); // Get current date
-        return startDate >= today; // Only include bookings starting today or in the future
+        const startDate = new Date(booking.rentalStartDate);
+        const today = new Date();
+        return startDate >= today;
       });
 
-      setBookings(filteredBookings); // Update state with filtered data
+      setBookings(filteredBookings);
       setLoadingBookings(false);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -94,7 +92,7 @@ const Dashboard = () => {
   const fetchCars = async () => {
     try {
       setLoadingCars(true);
-      const query = '*[_type == "carDataTypes"]'; // Sanity query to fetch all cars
+      const query = '*[_type == "carDataTypes"]';
       const data = await client.fetch(query);
       setCars(data);
       setLoadingCars(false);
@@ -104,7 +102,6 @@ const Dashboard = () => {
     }
   };
 
-  // Handle form input changes for Car Data
   const handleCarInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
@@ -113,7 +110,6 @@ const Dashboard = () => {
     }));
   };
 
-  // Handle form input changes for Booking Data
   const handleBookingInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setBookingData(prevData => ({
@@ -122,12 +118,10 @@ const Dashboard = () => {
     }));
   };
 
-  // Handle form submit for Car Data
   const handleSubmitCarData = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isEditingCar && editCarId) {
-      // Update existing car data
       try {
         await client.patch(editCarId).set({
           name: formData.name,
@@ -141,7 +135,7 @@ const Dashboard = () => {
           tags: formData.tags,
           image: formData.image,
         });
-        fetchCars(); // Fetch the updated car data
+        fetchCars();
         setIsEditingCar(false);
         setEditCarId(null);
         clearForm();
@@ -149,7 +143,6 @@ const Dashboard = () => {
         console.error('Error updating car data:', error);
       }
     } else {
-      // Insert new car data
       try {
         await client.create({
           _type: 'carDataTypes',
@@ -164,7 +157,7 @@ const Dashboard = () => {
           tags: formData.tags,
           image: formData.image,
         });
-        fetchCars(); // Fetch the updated car data
+        fetchCars();
         clearForm();
       } catch (error) {
         console.error('Error creating car data:', error);
@@ -172,7 +165,6 @@ const Dashboard = () => {
     }
   };
 
-  // Handle form submit for Booking Data
   const handleSubmitBookingData = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -189,14 +181,13 @@ const Dashboard = () => {
         paymentMethod: bookingData.paymentMethod,
         totalCost: bookingData.totalCost
       });
-      fetchBookings(); // Fetch the updated booking data
+      fetchBookings();
       clearBookingForm();
     } catch (error) {
       console.error('Error creating booking:', error);
     }
   };
 
-  // Handle editing a car entry
   const handleEditCar = (car: any) => {
     setFormData({
       name: car.name,
@@ -211,30 +202,27 @@ const Dashboard = () => {
       image: car.image,
     });
     setIsEditingCar(true);
-    setEditCarId(car._id); // Set the car id to update
+    setEditCarId(car._id);
   };
 
-  // Handle deleting a car entry
   const handleDeleteCar = async (carId: string) => {
     try {
-      await client.delete(carId); // Delete car from Sanity
-      fetchCars(); // Fetch updated cars list after deletion
+      await client.delete(carId);
+      fetchCars();
     } catch (error) {
       console.error('Error deleting car data:', error);
     }
   };
 
-  // Handle deleting a booking entry
   const handleDeleteBooking = async (bookingId: string) => {
     try {
-      await client.delete(bookingId); // Delete booking from Sanity
-      fetchBookings(); // Fetch updated bookings list after deletion
+      await client.delete(bookingId);
+      fetchBookings();
     } catch (error) {
       console.error('Error deleting booking:', error);
     }
   };
 
-  // Clear car form fields
   const clearForm = () => {
     setFormData({
       name: '',
@@ -250,7 +238,6 @@ const Dashboard = () => {
     });
   };
 
-  // Clear booking form fields
   const clearBookingForm = () => {
     setBookingData({
       fullName: '',
@@ -265,31 +252,32 @@ const Dashboard = () => {
     });
   };
 
-  // Logout function
   const handleLogout = () => {
     localStorage.removeItem('admin');
-    window.location.href = '/login'; // Redirect to login on logout
+    window.location.href = '/login';
   };
 
   return isAuthenticated ? (
-    <div className="flex">
+    <div className="flex flex-col">
       {/* Sidebar */}
       <Sidebar onLogout={handleLogout} />
 
       {/* Main content */}
-      <div className="w-full p-6">
+      <div className="pt-16 w-full p-6">
         <h1 className="text-3xl mb-4">Admin Dashboard</h1>
 
         {/* Bookings Section */}
-        <h2 className="text-xl mb-4">Bookings</h2>
-        <form onSubmit={handleSubmitBookingData} className="mb-6">
+        {/* <h2 className="text-xl mb-4 top-[-10%]">Bookings</h2>
+         */}
+         <h2 className="text-xl mb-4 mt-4">Bookings</h2>
+        <form onSubmit={handleSubmitBookingData} className="mb-6 space-y-4">
           <input
             type="text"
             name="fullName"
             value={bookingData.fullName}
             onChange={handleBookingInputChange}
             placeholder="Full Name"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="email"
@@ -297,7 +285,7 @@ const Dashboard = () => {
             value={bookingData.email}
             onChange={handleBookingInputChange}
             placeholder="Email"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="tel"
@@ -305,7 +293,7 @@ const Dashboard = () => {
             value={bookingData.phone}
             onChange={handleBookingInputChange}
             placeholder="Phone"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="text"
@@ -313,7 +301,7 @@ const Dashboard = () => {
             value={bookingData.carModel}
             onChange={handleBookingInputChange}
             placeholder="Car Model"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="number"
@@ -321,21 +309,21 @@ const Dashboard = () => {
             value={bookingData.rentalDuration}
             onChange={handleBookingInputChange}
             placeholder="Rental Duration (days)"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="date"
             name="rentalStartDate"
             value={bookingData.rentalStartDate}
             onChange={handleBookingInputChange}
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="date"
             name="rentalEndDate"
             value={bookingData.rentalEndDate}
             onChange={handleBookingInputChange}
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="text"
@@ -343,7 +331,7 @@ const Dashboard = () => {
             value={bookingData.paymentMethod}
             onChange={handleBookingInputChange}
             placeholder="Payment Method"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="number"
@@ -351,7 +339,7 @@ const Dashboard = () => {
             value={bookingData.totalCost}
             onChange={handleBookingInputChange}
             placeholder="Total Cost"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <button
             type="submit"
@@ -364,63 +352,65 @@ const Dashboard = () => {
         {loadingBookings ? (
           <div>Loading bookings...</div>
         ) : (
-          <table className="table-auto w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2">Name</th>
-                <th className="border px-4 py-2">Email</th>
-                <th className="border px-4 py-2">Phone</th>
-                <th className="border px-4 py-2">Car Model</th>
-                <th className="border px-4 py-2">Rental Duration</th>
-                <th className="border px-4 py-2">Rental Start</th>
-                <th className="border px-4 py-2">Rental End</th>
-                <th className="border px-4 py-2">Payment Method</th>
-                <th className="border px-4 py-2">Total Cost</th>
-                <th className="border px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((booking) => (
-                <tr key={booking._id}>
-                  <td className="border px-4 py-2">{booking.fullName}</td>
-                  <td className="border px-4 py-2">{booking.email}</td>
-                  <td className="border px-4 py-2">{booking.phone}</td>
-                  <td className="border px-4 py-2">{booking.carModel}</td>
-                  <td className="border px-4 py-2">{booking.rentalDuration}</td>
-                  <td className="border px-4 py-2">{booking.rentalStartDate}</td>
-                  <td className="border px-4 py-2">{booking.rentalEndDate}</td>
-                  <td className="border px-4 py-2">{booking.paymentMethod}</td>
-                  <td className="border px-4 py-2">{booking.totalCost}</td>
-                  <td className="border px-4 py-2">
-                  <button
-                      onClick={() => handleEditCar(booking)}
-                      className="bg-yellow-500 text-white py-1 px-4 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteBooking(booking._id)}
-                      className="bg-red-500 text-white py-1 px-4 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-4 py-2">Name</th>
+                  <th className="border px-4 py-2">Email</th>
+                  <th className="border px-4 py-2">Phone</th>
+                  <th className="border px-4 py-2">Car Model</th>
+                  <th className="border px-4 py-2">Rental Duration</th>
+                  <th className="border px-4 py-2">Start Date</th>
+                  <th className="border px-4 py-2">End Date</th>
+                  <th className="border px-4 py-2">Payment Method</th>
+                  <th className="border px-4 py-2">Total Cost</th>
+                  <th className="border px-4 py-2">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bookings.map((booking: any) => (
+                  <tr key={booking._id}>
+                    <td className="border px-4 py-2">{booking.fullName}</td>
+                    <td className="border px-4 py-2">{booking.email}</td>
+                    <td className="border px-4 py-2">{booking.phone}</td>
+                    <td className="border px-4 py-2">{booking.carModel}</td>
+                    <td className="border px-4 py-2">{booking.rentalDuration} days</td>
+                    <td className="border px-4 py-2">{booking.rentalStartDate}</td>
+                    <td className="border px-4 py-2">{booking.rentalEndDate}</td>
+                    <td className="border px-4 py-2">{booking.paymentMethod}</td>
+                    <td className="border px-4 py-2">{booking.totalCost}</td>
+                    <td className="border px-4 py-2">
+                    <button
+                        onClick={() => handleEditCar(booking)}
+                        className="bg-yellow-500 text-white py-1 px-3 rounded"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteBooking(booking._id)}
+                        className="bg-red-500 text-white py-1 px-3 rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Car Data Section */}
-        <h2 className="text-xl mb-4">Car Data</h2>
-        <form onSubmit={handleSubmitCarData} className="mb-6">
+        <h2 className="text-xl mt-8 mb-4">Car Data</h2>
+        <form onSubmit={handleSubmitCarData} className="mb-6 space-y-4">
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleCarInputChange}
             placeholder="Car Name"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="text"
@@ -428,7 +418,7 @@ const Dashboard = () => {
             value={formData.brand}
             onChange={handleCarInputChange}
             placeholder="Brand"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="text"
@@ -436,15 +426,15 @@ const Dashboard = () => {
             value={formData.type}
             onChange={handleCarInputChange}
             placeholder="Car Type"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
-            type="text"
+            type="number"
             name="fuelCapacity"
             value={formData.fuelCapacity}
             onChange={handleCarInputChange}
-            placeholder="Fuel Capacity"
-            className="border px-4 py-2 w-full mb-4"
+            placeholder="Fuel Capacity (L)"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="text"
@@ -452,7 +442,7 @@ const Dashboard = () => {
             value={formData.transmission}
             onChange={handleCarInputChange}
             placeholder="Transmission"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="number"
@@ -460,7 +450,7 @@ const Dashboard = () => {
             value={formData.seatingCapacity}
             onChange={handleCarInputChange}
             placeholder="Seating Capacity"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="number"
@@ -468,7 +458,7 @@ const Dashboard = () => {
             value={formData.pricePerDay}
             onChange={handleCarInputChange}
             placeholder="Price Per Day"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
           />
           <input
             type="number"
@@ -476,7 +466,17 @@ const Dashboard = () => {
             value={formData.originalPrice}
             onChange={handleCarInputChange}
             placeholder="Original Price"
-            className="border px-4 py-2 w-full mb-4"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="text"
+            name="tags"
+            value={formData.tags.join(', ')}
+            // onChange={(e) => handleCarInputChange({
+            //   target: { name: 'tags', value: e.target.value.split(', ') }
+            // })}
+            placeholder="Tags (comma separated)"
+            className="border px-4 py-2 w-full"
           />
           <button
             type="submit"
@@ -489,56 +489,57 @@ const Dashboard = () => {
         {loadingCars ? (
           <div>Loading cars...</div>
         ) : (
-          <table className="table-auto w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2">Name</th>
-                <th className="border px-4 py-2">Brand</th>
-                <th className="border px-4 py-2">Type</th>
-                <th className="border px-4 py-2">Fuel Capacity</th>
-                <th className="border px-4 py-2">Transmission</th>
-                <th className="border px-4 py-2">Seating Capacity</th>
-                <th className="border px-4 py-2">Price Per Day</th>
-                <th className="border px-4 py-2">Original Price</th>
-                <th className="border px-4 py-2">Image</th>
-                <th className="border px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cars.map((car) => (
-                <tr key={car._id}>
-                  <td className="border px-4 py-2">{car.name}</td>
-                  <td className="border px-4 py-2">{car.brand}</td>
-                  <td className="border px-4 py-2">{car.type}</td>
-                  <td className="border px-4 py-2">{car.fuelCapacity}</td>
-                  <td className="border px-4 py-2">{car.transmission}</td>
-                  <td className="border px-4 py-2">{car.seatingCapacity}</td>
-                  <td className="border px-4 py-2">{car.originalPrice}</td>
-                  <td className="border px-4 py-2">{car.image_url}</td>
-                  <td className="border px-4 py-2">{car.pricePerDay}</td>
-                  <td className="border px-4 py-2">{car.originalPrice}</td>
-                  <td className="border px-4 py-2">
-                    <button
-                      onClick={() => handleEditCar(car)}
-                      className="bg-yellow-500 text-white py-1 px-4 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCar(car._id)}
-                      className="bg-red-500 text-white py-1 px-4 rounded ml-2"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-4 py-2">Name</th>
+                  <th className="border px-4 py-2">Brand</th>
+                  <th className="border px-4 py-2">Type</th>
+                  <th className="border px-4 py-2">Fuel Capacity</th>
+                  <th className="border px-4 py-2">Transmission</th>
+                  <th className="border px-4 py-2">Seating Capacity</th>
+                  <th className="border px-4 py-2">Price Per Day</th>
+                  <th className="border px-4 py-2">Original Price</th>
+                  <th className="border px-4 py-2">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {cars.map((car: any) => (
+                  <tr key={car._id}>
+                    <td className="border px-4 py-2">{car.name}</td>
+                    <td className="border px-4 py-2">{car.brand}</td>
+                    <td className="border px-4 py-2">{car.type}</td>
+                    <td className="border px-4 py-2">{car.fuelCapacity} L</td>
+                    <td className="border px-4 py-2">{car.transmission}</td>
+                    <td className="border px-4 py-2">{car.seatingCapacity}</td>
+                    <td className="border px-4 py-2">${car.pricePerDay}</td>
+                    <td className="border px-4 py-2">${car.originalPrice}</td>
+                    <td className="border px-4 py-2">
+                      <button
+                        onClick={() => handleEditCar(car)}
+                        className="bg-yellow-500 text-white py-1 px-3 rounded"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCar(car._id)}
+                        className="bg-red-500 text-white py-1 px-3 rounded ml-2"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
-  ) : null;
+  ) : (
+    <div>Loading...</div>
+  );
 };
 
 export default Dashboard;
