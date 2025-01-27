@@ -5,8 +5,10 @@ import React, { useEffect, useState } from 'react';
 
 
 const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
-  <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
+  <div>
+    <div  className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
     <h2 className="text-xl sm:text-2xl sm:mt-0 mt-4 text-center sm:text-left">Admin Panel</h2>
+    
     <ul className="sm:flex sm:space-x-6 sm:mt-2 space-y-4 sm:items-center">
       <li>
         <a href="/dashboard" className="text-white block text-center sm:text-left">Dashboard</a>
@@ -23,6 +25,7 @@ const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
         </button>
       </li>
     </ul>
+    </div>
   </div>
 );
 
@@ -510,11 +513,11 @@ const Dashboard = () => {
                     <td className="border px-4 py-2">{car.name}</td>
                     <td className="border px-4 py-2">{car.brand}</td>
                     <td className="border px-4 py-2">{car.type}</td>
-                    <td className="border px-4 py-2">{car.fuelCapacity} L</td>
+                    <td className="border px-4 py-2">{car.fuelCapacity} </td>
                     <td className="border px-4 py-2">{car.transmission}</td>
                     <td className="border px-4 py-2">{car.seatingCapacity}</td>
-                    <td className="border px-4 py-2">${car.pricePerDay}</td>
-                    <td className="border px-4 py-2">${car.originalPrice}</td>
+                    <td className="border px-4 py-2">{car.pricePerDay}</td>
+                    <td className="border px-4 py-2">{car.originalPrice}</td>
                     <td className="border px-4 py-2">
                       <button
                         onClick={() => handleEditCar(car)}
