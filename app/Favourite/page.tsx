@@ -85,7 +85,7 @@ const FavoritesPage = () => {
         alt={car.name}
         width={500} // Specify width for next/image
         height={300} // Specify height for next/image
-        className="w-full h-32 object-cover rounded-t-lg"
+        className="w-full h-30 object-cover rounded-t-lg"
         loading="lazy"
       />
       <div className="flex gap-3 items-center justify-center">
@@ -159,10 +159,13 @@ const FavoritesPage = () => {
   if (loading && favoriteCarsData.length === 0) {
     return <div className="text-center text-gray-500">Loading your favorite cars...</div>;
   }
+  
 
   return (
     <div className="p-6 bg-gray-100">
+      <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8"></h2>
       <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8">Your Favorite Cars</h2>
+
 
       {error ? (
         <p className="text-center text-red-500">{error}</p>
