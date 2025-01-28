@@ -168,14 +168,14 @@ const CarRecommendationPage = () => {
 
               <div>
                 <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
-                <Link href={`/payment?carName=${car.name}`}>
-  <button
-    className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-    aria-label={`Rent ${car.name} now`}
-  >
-    Rent Now
-  </button>
-</Link>
+                <Link href={`/car/${car._id}`}>
+                  <button
+                    className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+                    aria-label={`Rent ${car.name} now`}
+                  >
+                    Rent Now
+                  </button>
+                </Link>
               </div>
             </div>
           ))
