@@ -12,10 +12,22 @@ export default {
     { name: 'rentalEndDate', title: 'Rental End Date', type: 'date' },
     { name: 'pickupLocation', title: 'Pickup Location', type: 'string' },
     { name: 'pickupTime', title: 'Pickup Time', type: 'string' },
-    { name: 'paymentMethod', title: 'Payment Method', type: 'string' },
     { name: 'totalCost', title: 'Total Cost', type: 'number' },
+    { name: 'paymentType', title: 'Payment Type', type: 'string' }, // Online or Offline
 
-    // Credit Card Details (only for credit card payment method)
+    // Online payment fields
+    {
+      name: 'paymentMethod',
+      title: 'Payment Method',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Credit Card', value: 'creditCard' },
+          { title: 'JazzCash', value: 'jazzcash' },
+          { title: 'EasyPaisa', value: 'easypaisa' },
+        ],
+      },
+    },
     {
       name: 'creditCardDetails',
       title: 'Credit Card Details',
@@ -26,8 +38,6 @@ export default {
         { name: 'cvv', title: 'CVV', type: 'string' },
       ],
     },
-
-    // Payment Details (for JazzCash or EasyPaisa payment method)
     {
       name: 'paymentDetails',
       title: 'Payment Details',
@@ -39,14 +49,13 @@ export default {
     },
   ],
 
-  // Add a hook to handle the total cost calculation
   preview: {
     select: {
       title: 'fullName',
       subtitle: 'carModel',
       date: 'rentalStartDate',
     },
-    prepare(selection: any) {
+    prepare(selection : any) {
       const { title, subtitle, date } = selection;
       return {
         title: `${title} - ${subtitle}`,
