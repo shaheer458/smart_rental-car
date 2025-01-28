@@ -7,6 +7,7 @@ const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
   <div>
     <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
       <h2 className="text-xl sm:text-2xl sm:mt-0 mt-4 text-center sm:text-left">Admin Panel</h2>
+
       <ul className="sm:flex sm:space-x-6 sm:mt-2 space-y-4 sm:items-center">
         <li>
           <a href="/dashboard" className="text-white text-center sm:text-left">Dashboard</a>
@@ -57,19 +58,7 @@ const Dashboard = () => {
     rentalStartDate: '',
     rentalEndDate: '',
     paymentMethod: '',
-    totalCost: '',
-    pickupLocation: '',
-    pickupTime: '',
-    paymentType: '',
-    creditCardDetails: {
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
-    },
-    paymentDetails: {
-      jazzCashDetails: '',
-      easyPaisaDetails: '',
-    }
+    totalCost: ''
   });
 
   useEffect(() => {
@@ -191,18 +180,48 @@ const Dashboard = () => {
         rentalDuration: bookingData.rentalDuration,
         rentalStartDate: bookingData.rentalStartDate,
         rentalEndDate: bookingData.rentalEndDate,
-        pickupLocation: bookingData.pickupLocation,
-        pickupTime: bookingData.pickupTime,
-        totalCost: bookingData.totalCost,
         paymentMethod: bookingData.paymentMethod,
-        paymentType: bookingData.paymentType,
-        creditCardDetails: bookingData.creditCardDetails,
-        paymentDetails: bookingData.paymentDetails,
+        totalCost: bookingData.totalCost
       });
       fetchBookings();
       clearBookingForm();
     } catch (error) {
       console.error('Error creating booking:', error);
+    }
+  };
+
+  const handleEditCar = (car: any) => {
+    setFormData({
+      name: car.name,
+      brand: car.brand,
+      type: car.type,
+      fuelCapacity: car.fuelCapacity,
+      transmission: car.transmission,
+      seatingCapacity: car.seatingCapacity,
+      pricePerDay: car.pricePerDay,
+      originalPrice: car.originalPrice,
+      tags: car.tags,
+      image: car.image,
+    });
+    setIsEditingCar(true);
+    setEditCarId(car._id);
+  };
+
+  const handleDeleteCar = async (carId: string) => {
+    try {
+      await client.delete(carId);
+      fetchCars();
+    } catch (error) {
+      console.error('Error deleting car data:', error);
+    }
+  };
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    try {
+      await client.delete(bookingId);
+      fetchBookings();
+    } catch (error) {
+      console.error('Error deleting booking:', error);
     }
   };
 
@@ -231,19 +250,7 @@ const Dashboard = () => {
       rentalStartDate: '',
       rentalEndDate: '',
       paymentMethod: '',
-      totalCost: '',
-      pickupLocation: '',
-      pickupTime: '',
-      paymentType: '',
-      creditCardDetails: {
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-      },
-      paymentDetails: {
-        jazzCashDetails: '',
-        easyPaisaDetails: '',
-      },
+      totalCost: ''
     });
   };
 
@@ -254,8 +261,10 @@ const Dashboard = () => {
 
   return isAuthenticated ? (
     <div className="flex flex-col">
+      {/* Sidebar */}
       <Sidebar onLogout={handleLogout} />
 
+      {/* Main content */}
       <div className="pt-16 w-full p-6">
         <h1 className="text-3xl mb-4">Admin Dashboard</h1>
 
@@ -318,17 +327,10 @@ const Dashboard = () => {
           />
           <input
             type="text"
-            name="pickupLocation"
-            value={bookingData.pickupLocation}
+            name="paymentMethod"
+            value={bookingData.paymentMethod}
             onChange={handleBookingInputChange}
-            placeholder="Pickup Location"
-            className="border px-4 py-2 w-full"
-          />
-          <input
-            type="time"
-            name="pickupTime"
-            value={bookingData.pickupTime}
-            onChange={handleBookingInputChange}
+            placeholder="Payment Method"
             className="border px-4 py-2 w-full"
           />
           <input
@@ -339,19 +341,11 @@ const Dashboard = () => {
             placeholder="Total Cost"
             className="border px-4 py-2 w-full"
           />
-          <input
-            type="text"
-            name="paymentMethod"
-            value={bookingData.paymentMethod}
-            onChange={handleBookingInputChange}
-            placeholder="Payment Method"
-            className="border px-4 py-2 w-full"
-          />
           <button
             type="submit"
             className="bg-blue-500 text-white py-2 px-6 rounded"
           >
-            Submit Booking
+            Add Booking
           </button>
         </form>
 
@@ -369,32 +363,184 @@ const Dashboard = () => {
                   <th className="border px-4 py-2">Rental Duration</th>
                   <th className="border px-4 py-2">Start Date</th>
                   <th className="border px-4 py-2">End Date</th>
-                  <th className="border px-4 py-2">Pickup Location</th>
-                  <th className="border px-4 py-2">Pickup Time</th>
-                  <th className="border px-4 py-2">Total Cost</th>
                   <th className="border px-4 py-2">Payment Method</th>
+                  <th className="border px-4 py-2">Total Cost</th>
                   <th className="border px-4 py-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.map((booking: any) => (
                   <tr key={booking._id}>
-                    <td className="border px-4 py-2">{booking.fullName}</td>
-                    <td className="border px-4 py-2">{booking.email}</td>
-                    <td className="border px-4 py-2">{booking.phone}</td>
-                    <td className="border px-4 py-2">{booking.carModel}</td>
-                    <td className="border px-4 py-2">{booking.rentalDuration}</td>
-                    <td className="border px-4 py-2">{booking.rentalStartDate}</td>
-                    <td className="border px-4 py-2">{booking.rentalEndDate}</td>
-                    <td className="border px-4 py-2">{booking.pickupLocation}</td>
-                    <td className="border px-4 py-2">{booking.pickupTime}</td>
-                    <td className="border px-4 py-2">{booking.totalCost}</td>
-                    <td className="border px-4 py-2">{booking.paymentType}</td>
-                    <td className="border px-4 py-2">{booking.paymentMethod}</td>
+                    <tbody>
+  {bookings.map((booking: any) => (
+    <tr key={booking._id}>
+      <td className="border px-4 py-2">{booking.fullName}</td>
+      <td className="border px-4 py-2">{booking.email}</td>
+      <td className="border px-4 py-2">{booking.phone}</td>
+      <td className="border px-4 py-2">{booking.carModel}</td>
+      <td className="border px-4 py-2">{booking.rentalDuration}</td>
+      <td className="border px-4 py-2">{booking.rentalStartDate}</td>
+      <td className="border px-4 py-2">{booking.rentalEndDate}</td>
+      <td className="border px-4 py-2">{booking.pickupLocation}</td>
+      <td className="border px-4 py-2">{booking.pickupTime}</td>
+      <td className="border px-4 py-2">{booking.paymentType}</td>
+      <td className="border px-4 py-2">{booking.paymentMethod}</td>
+      <td className="border px-4 py-2">{booking.totalCost}</td>
+      <td className="border px-4 py-2">
+        <button
+          onClick={() => handleDeleteBooking(booking._id)}
+          className="bg-red-500 text-white py-1 px-2 rounded"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
 
                     <td className="border px-4 py-2">
                       <button
-                        onClick={() => (booking._id)}
+                        onClick={() => handleDeleteBooking(booking._id)}
+                        className="bg-red-500 text-white py-1 px-2 rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Car Data Section */}
+        <h2 className="text-xl mb-4 mt-4">Car Data</h2>
+        <form onSubmit={handleSubmitCarData} className="mb-6 space-y-4">
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleCarInputChange}
+            placeholder="Car Name"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="text"
+            name="brand"
+            value={formData.brand}
+            onChange={handleCarInputChange}
+            placeholder="Car Brand"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="text"
+            name="type"
+            value={formData.type}
+            onChange={handleCarInputChange}
+            placeholder="Car Type"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="number"
+            name="fuelCapacity"
+            value={formData.fuelCapacity}
+            onChange={handleCarInputChange}
+            placeholder="Fuel Capacity"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="text"
+            name="transmission"
+            value={formData.transmission}
+            onChange={handleCarInputChange}
+            placeholder="Transmission"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="number"
+            name="seatingCapacity"
+            value={formData.seatingCapacity}
+            onChange={handleCarInputChange}
+            placeholder="Seating Capacity"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="String"
+            name="pricePerDay"
+            value={formData.pricePerDay}
+            onChange={handleCarInputChange}
+            placeholder="Price per Day"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="string"
+            name="originalPrice"
+            value={formData.originalPrice}
+            onChange={handleCarInputChange}
+            placeholder="Original Price"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="text"
+            name="tags"
+            value={formData.tags.join(', ')}
+            onChange={handleCarInputChange}
+            placeholder="Tags (comma separated)"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="file"
+            name="image"
+            onChange={(e) => {
+              const file = e.target.files ? e.target.files[0] : null;
+              
+            }}
+            className="border px-4 py-2 w-full"
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-6 rounded"
+          >
+            {isEditingCar ? 'Update Car' : 'Add Car'}
+          </button>
+        </form>
+
+        {loadingCars ? (
+          <div>Loading cars...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-4 py-2">Car Name</th>
+                  <th className="border px-4 py-2">Brand</th>
+                  <th className="border px-4 py-2">Type</th>
+                  <th className="border px-4 py-2">Fuel Capacity</th>
+                  <th className="border px-4 py-2">Transmission</th>
+                  <th className="border px-4 py-2">Seating Capacity</th>
+                  <th className="border px-4 py-2">Price per Day</th>
+                  <th className="border px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cars.map((car: any) => (
+                  <tr key={car._id}>
+                    <td className="border px-4 py-2">{car.name}</td>
+                    <td className="border px-4 py-2">{car.brand}</td>
+                    <td className="border px-4 py-2">{car.type}</td>
+                    <td className="border px-4 py-2">{car.fuelCapacity}</td>
+                    <td className="border px-4 py-2">{car.transmission}</td>
+                    <td className="border px-4 py-2">{car.seatingCapacity}</td>
+                    <td className="border px-4 py-2">{car.pricePerDay}</td>
+                    <td className="border px-4 py-2">
+                      <button
+                        onClick={() => handleEditCar(car)}
+                        className="bg-yellow-500 text-white py-1 px-2 rounded mr-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCar(car._id)}
                         className="bg-red-500 text-white py-1 px-2 rounded"
                       >
                         Delete
