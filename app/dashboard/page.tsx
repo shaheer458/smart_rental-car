@@ -3,28 +3,27 @@
 import { client } from '@/sanity/lib/client';
 import React, { useEffect, useState } from 'react';
 
-
 const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
   <div>
-    <div  className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
-    <h2 className="text-xl sm:text-2xl sm:mt-0 mt-4 text-center sm:text-left">Admin Panel</h2>
-    
-    <ul className="sm:flex sm:space-x-6 sm:mt-2 space-y-4 sm:items-center">
-      <li>
-        <a href="/dashboard" className="text-white block text-center sm:text-left">Dashboard</a>
-      </li>
-      <li>
-        <a href="/dashboard" className="text-white block text-center sm:text-left">Bookings</a>
-      </li>
-      <li>
-        <a href="/dashboard" className="text-white block text-center sm:text-left">Car Data</a>
-      </li>
-      <li>
-        <button onClick={onLogout} className="bg-red-500 text-white py-2 px-6 rounded block text-center sm:text-left">
-          Logout
-        </button>
-      </li>
-    </ul>
+    <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
+      <h2 className="text-xl sm:text-2xl sm:mt-0 mt-4 text-center sm:text-left">Admin Panel</h2>
+
+      <ul className="sm:flex sm:space-x-6 sm:mt-2 space-y-4 sm:items-center">
+        <li>
+          <a href="/dashboard" className="text-white text-center sm:text-left">Dashboard</a>
+        </li>
+        <li>
+          <a href="/dashboard" className="text-white block text-center sm:text-left">Bookings</a>
+        </li>
+        <li>
+          <a href="/dashboard" className="text-white block text-center sm:text-left">Car Data</a>
+        </li>
+        <li>
+          <button onClick={onLogout} className="bg-red-500 text-white py-2 px-6 rounded block text-center sm:text-left">
+            Logout
+          </button>
+        </li>
+      </ul>
     </div>
   </div>
 );
@@ -270,9 +269,7 @@ const Dashboard = () => {
         <h1 className="text-3xl mb-4">Admin Dashboard</h1>
 
         {/* Bookings Section */}
-        {/* <h2 className="text-xl mb-4 top-[-10%]">Bookings</h2>
-         */}
-         <h2 className="text-xl mb-4 mt-4">Bookings</h2>
+        <h2 className="text-xl mb-4 mt-4">Bookings</h2>
         <form onSubmit={handleSubmitBookingData} className="mb-6 space-y-4">
           <input
             type="text"
@@ -378,21 +375,15 @@ const Dashboard = () => {
                     <td className="border px-4 py-2">{booking.email}</td>
                     <td className="border px-4 py-2">{booking.phone}</td>
                     <td className="border px-4 py-2">{booking.carModel}</td>
-                    <td className="border px-4 py-2">{booking.rentalDuration} days</td>
+                    <td className="border px-4 py-2">{booking.rentalDuration}</td>
                     <td className="border px-4 py-2">{booking.rentalStartDate}</td>
                     <td className="border px-4 py-2">{booking.rentalEndDate}</td>
                     <td className="border px-4 py-2">{booking.paymentMethod}</td>
                     <td className="border px-4 py-2">{booking.totalCost}</td>
                     <td className="border px-4 py-2">
-                    <button
-                        onClick={() => handleEditCar(booking)}
-                        className="bg-yellow-500 text-white py-1 px-3 rounded"
-                      >
-                        Edit
-                      </button>
                       <button
                         onClick={() => handleDeleteBooking(booking._id)}
-                        className="bg-red-500 text-white py-1 px-3 rounded"
+                        className="bg-red-500 text-white py-1 px-2 rounded"
                       >
                         Delete
                       </button>
@@ -405,7 +396,7 @@ const Dashboard = () => {
         )}
 
         {/* Car Data Section */}
-        <h2 className="text-xl mt-8 mb-4">Car Data</h2>
+        <h2 className="text-xl mb-4 mt-4">Car Data</h2>
         <form onSubmit={handleSubmitCarData} className="mb-6 space-y-4">
           <input
             type="text"
@@ -420,7 +411,7 @@ const Dashboard = () => {
             name="brand"
             value={formData.brand}
             onChange={handleCarInputChange}
-            placeholder="Brand"
+            placeholder="Car Brand"
             className="border px-4 py-2 w-full"
           />
           <input
@@ -436,7 +427,7 @@ const Dashboard = () => {
             name="fuelCapacity"
             value={formData.fuelCapacity}
             onChange={handleCarInputChange}
-            placeholder="Fuel Capacity (L)"
+            placeholder="Fuel Capacity"
             className="border px-4 py-2 w-full"
           />
           <input
@@ -460,7 +451,7 @@ const Dashboard = () => {
             name="pricePerDay"
             value={formData.pricePerDay}
             onChange={handleCarInputChange}
-            placeholder="Price Per Day"
+            placeholder="Price per Day"
             className="border px-4 py-2 w-full"
           />
           <input
@@ -475,10 +466,17 @@ const Dashboard = () => {
             type="text"
             name="tags"
             value={formData.tags.join(', ')}
-            // onChange={(e) => handleCarInputChange({
-            //   target: { name: 'tags', value: e.target.value.split(', ') }
-            // })}
+            onChange={handleCarInputChange}
             placeholder="Tags (comma separated)"
+            className="border px-4 py-2 w-full"
+          />
+          <input
+            type="file"
+            name="image"
+            onChange={(e) => {
+              const file = e.target.files ? e.target.files[0] : null;
+              
+            }}
             className="border px-4 py-2 w-full"
           />
           <button
@@ -496,14 +494,13 @@ const Dashboard = () => {
             <table className="table-auto w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border px-4 py-2">Name</th>
+                  <th className="border px-4 py-2">Car Name</th>
                   <th className="border px-4 py-2">Brand</th>
                   <th className="border px-4 py-2">Type</th>
                   <th className="border px-4 py-2">Fuel Capacity</th>
                   <th className="border px-4 py-2">Transmission</th>
                   <th className="border px-4 py-2">Seating Capacity</th>
-                  <th className="border px-4 py-2">Price Per Day</th>
-                  <th className="border px-4 py-2">Original Price</th>
+                  <th className="border px-4 py-2">Price per Day</th>
                   <th className="border px-4 py-2">Actions</th>
                 </tr>
               </thead>
@@ -513,21 +510,20 @@ const Dashboard = () => {
                     <td className="border px-4 py-2">{car.name}</td>
                     <td className="border px-4 py-2">{car.brand}</td>
                     <td className="border px-4 py-2">{car.type}</td>
-                    <td className="border px-4 py-2">{car.fuelCapacity} </td>
+                    <td className="border px-4 py-2">{car.fuelCapacity}</td>
                     <td className="border px-4 py-2">{car.transmission}</td>
                     <td className="border px-4 py-2">{car.seatingCapacity}</td>
                     <td className="border px-4 py-2">{car.pricePerDay}</td>
-                    <td className="border px-4 py-2">{car.originalPrice}</td>
                     <td className="border px-4 py-2">
                       <button
                         onClick={() => handleEditCar(car)}
-                        className="bg-yellow-500 text-white py-1 px-3 rounded"
+                        className="bg-yellow-500 text-white py-1 px-2 rounded mr-2"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteCar(car._id)}
-                        className="bg-red-500 text-white py-1 px-3 rounded ml-2"
+                        className="bg-red-500 text-white py-1 px-2 rounded"
                       >
                         Delete
                       </button>
@@ -540,9 +536,7 @@ const Dashboard = () => {
         )}
       </div>
     </div>
-  ) : (
-    <div>Loading...</div>
-  );
+  ) : null;
 };
 
 export default Dashboard;
