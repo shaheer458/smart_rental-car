@@ -32,16 +32,27 @@ const CarRentalPayment = () => {
     };
     fetchCarData();
   }, []);
-
-  // Calculate total cost based on selected car model and rental duration
   useEffect(() => {
     const selectedCar = carData.find((car) => car.name === carModel);
-    if (selectedCar && rentalDuration > 0) {
-      setTotalCost(selectedCar.pricePerDay * rentalDuration);
-    } else {
-      setTotalCost(0); // If no car is selected, set total cost to 0
+    
+    if (!selectedCar) {
+      console.log("No car selected");
+      setTotalCost(0);
+      return;
     }
+  
+    if (rentalDuration <= 0) {
+      console.log("Invalid rental duration");
+      setTotalCost(0);
+      return;
+    }
+  
+    const calculatedCost = selectedCar.pricePerDay * rentalDuration;
+    console.log("Total Cost Calculated:", calculatedCost);
+    setTotalCost(isNaN(calculatedCost) ? 0 : calculatedCost);
   }, [carModel, rentalDuration, carData]);
+  
+  
 
   // Check car availability before booking
   const checkCarAvailability = async (carModel: string, rentalStartDate: string, rentalEndDate: string) => {
@@ -286,6 +297,12 @@ const CarRentalPayment = () => {
             </div>
           </div>
         </div>
+        {/* Total Cost Section */}
+        
+
+
+
+
 
         {/* Payment Type Selection */}
         <div className="mb-6">
