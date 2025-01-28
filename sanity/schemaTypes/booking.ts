@@ -10,8 +10,10 @@ export default {
     { name: 'rentalDuration', title: 'Rental Duration (Days)', type: 'number' },
     { name: 'rentalStartDate', title: 'Rental Start Date', type: 'date' },
     { name: 'rentalEndDate', title: 'Rental End Date', type: 'date' },
+    { name: 'pickupLocation', title: 'Pickup Location', type: 'string' },
+    { name: 'pickupTime', title: 'Pickup Time', type: 'string' },
     { name: 'paymentMethod', title: 'Payment Method', type: 'string' },
-    { name: 'totalCost', title: 'Total Cost', type: 'number' }, // Total cost field will be set based on the car rental price and duration
+    { name: 'totalCost', title: 'Total Cost', type: 'number' },
 
     // Credit Card Details (only for credit card payment method)
     {
@@ -44,7 +46,7 @@ export default {
       subtitle: 'carModel',
       date: 'rentalStartDate',
     },
-    prepare(selection : any) {
+    prepare(selection: any) {
       const { title, subtitle, date } = selection;
       return {
         title: `${title} - ${subtitle}`,
