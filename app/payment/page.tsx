@@ -21,6 +21,7 @@ const CarRentalPayment = () => {
   const [rentalEndDate, setRentalEndDate] = useState<string>('');
   const [pickupLocation, setPickupLocation] = useState('');
   const [pickupTime, setPickupTime] = useState('');
+  const [paymentType, setPaymentType] = useState(''); // Payment type (online or offline)
   const [carData, setCarData] = useState<{ name: string; pricePerDay: number }[]>([]);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ const CarRentalPayment = () => {
     if (selectedCar && rentalDuration > 0) {
       setTotalCost(selectedCar.pricePerDay * rentalDuration);
     } else {
-      setTotalCost(0);  // If no car is selected, set total cost to 0
+      setTotalCost(0); // If no car is selected, set total cost to 0
     }
   }, [carModel, rentalDuration, carData]);
 
@@ -55,7 +56,7 @@ const CarRentalPayment = () => {
     e.preventDefault();
 
     // Validate form
-    if (!fullName || !email || !phone || !carModel || !rentalStartDate || !rentalEndDate || rentalDuration <= 0 || !paymentMethod || !pickupLocation || !pickupTime) {
+    if (!fullName || !email || !phone || !carModel || !rentalStartDate || !rentalEndDate || rentalDuration <= 0 || !pickupLocation || !pickupTime) {
       setMessage('Please fill in all required fields.');
       return;
     }
@@ -69,24 +70,35 @@ const CarRentalPayment = () => {
 
     // Prepare payment details based on the selected method
     let paymentDetails = {};
-    if (paymentMethod === 'creditCard') {
-      if (!creditCard || !expiryDate || !cvv) {
-        setMessage('Please provide all credit card details.');
+
+    if (paymentType === 'online') {
+      if (!paymentMethod) {
+        setMessage('Please select a payment method.');
         return;
       }
-      paymentDetails = { creditCardDetails: { cardNumber: creditCard, expiryDate, cvv } };
-    } else if (paymentMethod === 'jazzcash') {
-      if (!jazzCashDetails) {
-        setMessage('Please provide your JazzCash details.');
-        return;
+
+      if (paymentMethod === 'creditCard') {
+        if (!creditCard || !expiryDate || !cvv) {
+          setMessage('Please provide all credit card details.');
+          return;
+        }
+        paymentDetails = { creditCardDetails: { cardNumber: creditCard, expiryDate, cvv } };
+      } else if (paymentMethod === 'jazzcash') {
+        if (!jazzCashDetails) {
+          setMessage('Please provide your JazzCash details.');
+          return;
+        }
+        paymentDetails = { jazzCashDetails };
+      } else if (paymentMethod === 'easypaisa') {
+        if (!easyPaisaDetails) {
+          setMessage('Please provide your EasyPaisa details.');
+          return;
+        }
+        paymentDetails = { easyPaisaDetails };
       }
-      paymentDetails = { jazzCashDetails };
-    } else if (paymentMethod === 'easypaisa') {
-      if (!easyPaisaDetails) {
-        setMessage('Please provide your EasyPaisa details.');
-        return;
-      }
-      paymentDetails = { easyPaisaDetails };
+    } else if (paymentType === 'offline') {
+      // For offline payment, you don't need to gather payment details, just proceed
+      paymentDetails = { paymentType: 'offline' };
     }
 
     const bookingData = {
@@ -275,33 +287,40 @@ const CarRentalPayment = () => {
           </div>
         </div>
 
-        {/* Total Cost */}
+        {/* Payment Type Selection */}
         <div className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Total Cost: {totalCost > 0 ? totalCost : 'N/A'}
-          </h3>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Payment Type</h2>
+          <select
+            value={paymentType}
+            onChange={(e) => setPaymentType(e.target.value)}
+            required
+            className="w-full p-3 border border-gray-300 rounded-lg"
+          >
+            <option value="">--Select Payment Type--</option>
+            <option value="online">Online Payment</option>
+            <option value="offline">Offline Payment</option>
+          </select>
         </div>
 
         {/* Payment Method Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Select Payment Method</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700">Payment Method</label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              >
-                <option value="">--Select Payment Method--</option>
-                <option value="creditCard">Credit Card</option>
-                <option value="jazzcash">JazzCash</option>
-                <option value="easypaisa">EasyPaisa</option>
-              </select>
-            </div>
+        {paymentType === 'online' && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Payment Method</h2>
+            <select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg"
+            >
+              <option value="">--Select Payment Method--</option>
+              <option value="creditCard">Credit Card</option>
+              <option value="jazzcash">JazzCash</option>
+              <option value="easypaisa">EasyPaisa</option>
+            </select>
+
+            {/* Payment Method Details */}
             {paymentMethod === 'creditCard' && (
-              <>
+              <div className="space-y-4 mt-4">
                 <div>
                   <label className="block text-gray-700">Credit Card Number</label>
                   <input
@@ -315,7 +334,7 @@ const CarRentalPayment = () => {
                 <div>
                   <label className="block text-gray-700">Expiry Date</label>
                   <input
-                    type="month"
+                    type="text"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
                     required
@@ -332,7 +351,7 @@ const CarRentalPayment = () => {
                     className="w-full p-3 border border-gray-300 rounded-lg"
                   />
                 </div>
-              </>
+              </div>
             )}
             {paymentMethod === 'jazzcash' && (
               <div>
@@ -359,19 +378,20 @@ const CarRentalPayment = () => {
               </div>
             )}
           </div>
-        </div>
+        )}
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600"
-        >
-          Submit Booking
-        </button>
-      </form>
+        <div className="mb-6">
+          <button type="submit" className="w-full p-3 bg-blue-600 text-white rounded-lg">
+            Submit Booking
+          </button>
+        </div>
 
-      {/* Message */}
-      {message && <p className="mt-4 text-center text-red-500">{message}</p>}
+        {/* Error or Success Message */}
+        {message && (
+          <div className="text-center text-lg font-semibold text-red-500">{message}</div>
+        )}
+      </form>
     </div>
   );
 };
