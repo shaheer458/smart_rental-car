@@ -47,7 +47,7 @@ const CarRecommendationPage = () => {
         }
 
         // Log image URLs to check if they're correct
-        data.forEach((car : any) => {
+        data.forEach((car: any) => {
           console.log("Car Image URL:", car.image_url);
         });
 
@@ -168,7 +168,7 @@ const CarRecommendationPage = () => {
 
               <div>
                 <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
-                <Link href={`/payment`}>
+                <Link href={`/payment?carId=${car._id}&carName=${car.name}&carPrice=${car.pricePerDay}`}>
                   <button
                     className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
                     aria-label={`Rent ${car.name} now`}
@@ -184,27 +184,24 @@ const CarRecommendationPage = () => {
 
       {/* Show the "Show More Cars" and "Show Less Cars" buttons */}
       <div className="flex justify-center items-start pt-4 gap-4">
-  {/* Show More Cars button */}
-  {cars.length > visibleCars && (
-    <button
-      onClick={handleShowMore}
-      className="h-10 w-40 text-white bg-blue-500 rounded"
-    >
-      Show More Cars
-    </button>
-  )}
+        {cars.length > visibleCars && !showLess && (
+          <button
+            onClick={handleShowMore}
+            className="h-10 w-40 text-white bg-blue-500 rounded"
+          >
+            Show More Cars
+          </button>
+        )}
 
-  {/* Show Less Cars button (only appears when more than 8 cars are visible) */}
-  {visibleCars > 8 && (
-    <button
-      onClick={handleShowLess}
-      className="h-10 w-40 text-white bg-blue-500 rounded"
-    >
-      Show Less Cars
-    </button>
-  )}
-</div>
-
+        {showLess && (
+          <button
+            onClick={handleShowLess}
+            className="h-10 w-40 text-white bg-blue-500 rounded"
+          >
+            Show Less Cars
+          </button>
+        )}
+      </div>
     </div>
   );
 };
