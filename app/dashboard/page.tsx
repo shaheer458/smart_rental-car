@@ -5,21 +5,28 @@ import React, { useEffect, useState } from 'react';
 
 const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
   <div>
-    <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 sm:flex sm:flex-row sm:space-x-6">
-      <h2 className="text-xl sm:text-2xl sm:mt-0 mt-4 text-center sm:text-left">Admin Panel</h2>
+    {/* Container for Sidebar */}
+    <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      
+      {/* Admin Panel Title */}
+      <h2 className="text-2xl text-center mt-3 sm:text-left">Admin Panel</h2>
 
-      <ul className="sm:flex sm:space-x-6 sm:mt-2 space-y-4 sm:items-center">
+      
+      {/* Navigation Links */}
+      <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center justify-center sm:justify-end w-full sm:w-auto">
         <li>
-          <a href="/dashboard" className="text-white text-center sm:text-left">Dashboard</a>
+          <a href="/dashboard" className="text-white">Dashboard</a>
         </li>
         <li>
-          <a href="/dashboard" className="text-white block text-center sm:text-left">Bookings</a>
+          <a href="/dashboard" className="text-white">Bookings</a>
         </li>
         <li>
-          <a href="/dashboard" className="text-white block text-center sm:text-left">Car Data</a>
+          <a href="/dashboard" className="text-white">Car Data</a>
         </li>
         <li>
-          <button onClick={onLogout} className="bg-red-500 text-white py-2 px-6 rounded block text-center sm:text-left">
+          <button 
+            onClick={onLogout} 
+            className="bg-red-500 text-white py-2 px-6 rounded block sm:text-left">
             Logout
           </button>
         </li>
@@ -27,6 +34,7 @@ const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
     </div>
   </div>
 );
+
 
 const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -75,14 +83,14 @@ const Dashboard = () => {
   const fetchBookings = async () => {
     try {
       setLoadingBookings(true);
-      const query = '*[_type == "booking"]';
+      const query = '*[_type == "booking"]{_id, fullName, email, phone, carModel, rentalDuration, rentalStartDate, rentalEndDate, pickupLocation, pickupTime,paymentType, paymentMethod, totalCost}';
       const data = await client.fetch(query);
       const filteredBookings = data.filter((booking: any) => {
         const startDate = new Date(booking.rentalStartDate);
         const today = new Date();
         return startDate >= today;
       });
-
+  
       setBookings(filteredBookings);
       setLoadingBookings(false);
     } catch (error) {
@@ -90,6 +98,7 @@ const Dashboard = () => {
       setLoadingBookings(false);
     }
   };
+  
 
   const fetchCars = async () => {
     try {
@@ -350,68 +359,58 @@ const Dashboard = () => {
         </form>
 
         {loadingBookings ? (
-          <div>Loading bookings...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table-auto w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border px-4 py-2">Name</th>
-                  <th className="border px-4 py-2">Email</th>
-                  <th className="border px-4 py-2">Phone</th>
-                  <th className="border px-4 py-2">Car Model</th>
-                  <th className="border px-4 py-2">Rental Duration</th>
-                  <th className="border px-4 py-2">Start Date</th>
-                  <th className="border px-4 py-2">End Date</th>
-                  <th className="border px-4 py-2">Payment Method</th>
-                  <th className="border px-4 py-2">Total Cost</th>
-                  <th className="border px-4 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking: any) => (
-                  <tr key={booking._id}>
-                    <tbody>
-  {bookings.map((booking: any) => (
-    <tr key={booking._id}>
-      <td className="border px-4 py-2">{booking.fullName}</td>
-      <td className="border px-4 py-2">{booking.email}</td>
-      <td className="border px-4 py-2">{booking.phone}</td>
-      <td className="border px-4 py-2">{booking.carModel}</td>
-      <td className="border px-4 py-2">{booking.rentalDuration}</td>
-      <td className="border px-4 py-2">{booking.rentalStartDate}</td>
-      <td className="border px-4 py-2">{booking.rentalEndDate}</td>
-      <td className="border px-4 py-2">{booking.pickupLocation}</td>
-      <td className="border px-4 py-2">{booking.pickupTime}</td>
-      <td className="border px-4 py-2">{booking.paymentType}</td>
-      <td className="border px-4 py-2">{booking.paymentMethod}</td>
-      <td className="border px-4 py-2">{booking.totalCost}</td>
-      <td className="border px-4 py-2">
-        <button
-          onClick={() => handleDeleteBooking(booking._id)}
-          className="bg-red-500 text-white py-1 px-2 rounded"
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+  <div>Loading bookings...</div>
+) : (
+  <div className="overflow-x-auto">
+    <table className="table-auto w-full border-collapse border border-gray-300">
+      <thead>
+        <tr className="bg-gray-100">
+          <th className="border px-4 py-2">Name</th>
+          <th className="border px-4 py-2">Email</th>
+          <th className="border px-4 py-2">Phone</th>
+          <th className="border px-4 py-2">Car Model</th>
+          <th className="border px-4 py-2">Rental Duration</th>
+          <th className="border px-4 py-2">Start Date</th>
+          <th className="border px-4 py-2">End Date</th>
+          <th className="border px-4 py-2">Pickup Location</th>
+          <th className="border px-4 py-2">Pickup Time</th>
+          <th className="border px-4 py-2">Payment Method</th>
+          <th className="border px-4 py-2">Payment Type</th>
+          <th className="border px-4 py-2">Total Cost</th>
+          <th className="border px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {bookings.map((booking: any) => (
+          <tr key={booking._id}>
+            <td className="border px-4 py-2">{booking.fullName}</td>
+            <td className="border px-4 py-2">{booking.email}</td>
+            <td className="border px-4 py-2">{booking.phone}</td>
+            <td className="border px-4 py-2">{booking.carModel}</td>
+            <td className="border px-4 py-2">{booking.rentalDuration} days</td>
+            <td className="border px-4 py-2">{new Date(booking.rentalStartDate).toLocaleDateString()}</td>
+            <td className="border px-4 py-2">{new Date(booking.rentalEndDate).toLocaleDateString()}</td>
+            <td className="border px-4 py-2">{booking.pickupLocation}</td>
+            <td className="border px-4 py-2">{booking.pickupTime}</td>
+            <td className="border px-4 py-2">{booking.paymentMethod}</td>
+            <td className="border px-4 py-2">{booking.paymentType}</td>
+            <td className="border px-4 py-2">${booking.totalCost}</td>
+            <td className="border px-4 py-2">
+              <button
+                onClick={() => handleDeleteBooking(booking._id)}
+                className="bg-red-500 text-white py-1 px-2 rounded"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
 
-                    <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleDeleteBooking(booking._id)}
-                        className="bg-red-500 text-white py-1 px-2 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
 
         {/* Car Data Section */}
         <h2 className="text-xl mb-4 mt-4">Car Data</h2>
