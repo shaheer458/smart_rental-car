@@ -47,7 +47,7 @@ const CarRecommendationPage = () => {
         }
 
         // Log image URLs to check if they're correct
-        data.forEach((car: any) => {
+        data.forEach((car : any) => {
           console.log("Car Image URL:", car.image_url);
         });
 
@@ -82,9 +82,9 @@ const CarRecommendationPage = () => {
     setShowLess(true); // Show "Show Less" button
   };
 
-  // Handle "Show Less" functionality (fixed)
+  // Handle "Show Less" functionality
   const handleShowLess = () => {
-    setVisibleCars(8); // Reset to initial state
+    setVisibleCars((prev) => Math.max(8, prev - 4)); // Hide 4 cars but keep it minimum 8
     setShowLess(false); // Hide the "Show Less" button
   };
 
@@ -133,7 +133,7 @@ const CarRecommendationPage = () => {
                 <div className="flex">
                   <img
                     loading="lazy"
-                    src="/fuel-icon.png"
+                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/bb9f5fa088a33a8329469c11ed8f42f7df3e0fd11b9aa0921af94d8d3307f051?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
                     alt="Fuel Icon"
                     width={24}
                     height={24}
@@ -145,7 +145,7 @@ const CarRecommendationPage = () => {
                 <div className="flex">
                   <img
                     loading="lazy"
-                    src="/transmission-icon.png"
+                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/563fd9367e8be9e271233fa362e88c8b2205c920475aad51a787f2599d87477e?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
                     alt="Transmission Icon"
                     width={24}
                     height={24}
@@ -157,7 +157,7 @@ const CarRecommendationPage = () => {
                 <div className="flex">
                   <img
                     loading="lazy"
-                    src="/capacity-icon.png"
+                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/fd12c9762ffaa585959a2bb1c514f631f14a3524f88d9c2bd9d3da13bf9fa3d9?placeholderIfAbsent=true&apiKey=5967db0a3a5740a580d3441f6f0ec2df"
                     alt="Capacity Icon"
                     width={24}
                     height={24}
@@ -184,24 +184,27 @@ const CarRecommendationPage = () => {
 
       {/* Show the "Show More Cars" and "Show Less Cars" buttons */}
       <div className="flex justify-center items-start pt-4 gap-4">
-        {cars.length > visibleCars && (
-          <button
-            onClick={handleShowMore}
-            className="h-10 w-40 text-white bg-blue-500 rounded"
-          >
-            Show More Cars
-          </button>
-        )}
+  {/* Show More Cars button */}
+  {cars.length > visibleCars && (
+    <button
+      onClick={handleShowMore}
+      className="h-10 w-40 text-white bg-blue-500 rounded"
+    >
+      Show More Cars
+    </button>
+  )}
 
-        {showLess && visibleCars > 8 && (
-          <button
-            onClick={handleShowLess}
-            className="h-10 w-40 text-white bg-blue-500 rounded"
-          >
-            Show Less Cars
-          </button>
-        )}
-      </div>
+  {/* Show Less Cars button (only appears when more than 8 cars are visible) */}
+  {visibleCars > 8 && (
+    <button
+      onClick={handleShowLess}
+      className="h-10 w-40 text-white bg-blue-500 rounded"
+    >
+      Show Less Cars
+    </button>
+  )}
+</div>
+
     </div>
   );
 };
