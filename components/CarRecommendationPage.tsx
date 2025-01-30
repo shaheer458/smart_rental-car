@@ -23,6 +23,7 @@ const CarRecommendationPage = () => {
   const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({}); // Manage favorites
   const [visibleCars, setVisibleCars] = useState<number>(8); // Initially show 8 cars
   const [showLess, setShowLess] = useState<boolean>(false); // Track the state for "Show Less"
+  const [cart, setCart] = useState<Car[]>([]); // Manage cart state
 
   // Fetch cars data from Sanity CMS
   useEffect(() => {
@@ -76,6 +77,24 @@ const CarRecommendationPage = () => {
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites)); // Save to localStorage
   };
 
+  // ✅ Function to add a car to the cart
+  const addToCart = (car: Car) => {
+    // Check if the car is already in the cart
+    const isCarInCart = cart.some((item) => item._id === car._id);
+
+    if (isCarInCart) {
+      // If the car is already in the cart, show an alert
+      alert(`${car.name} has already been added to the cart!`);
+      return; // Prevent adding the car again
+    }
+
+    // If the car is not in the cart, add it
+    const updatedCart = [...cart, car];
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save to localStorage
+    alert(`${car.name} has been added to the cart!`);
+  };
+
   // Handle "Show More" functionality
   const handleShowMore = () => {
     setVisibleCars((prev) => prev + 8); // Show 8 more cars
@@ -84,8 +103,9 @@ const CarRecommendationPage = () => {
 
   // Handle "Show Less" functionality
   const handleShowLess = () => {
-    setVisibleCars((prev) => Math.max(8, prev - 4)); // Hide 4 cars but keep it minimum 8
-    setShowLess(false); // Hide the "Show Less" button
+    const newVisibleCars = Math.max(8, visibleCars - 8); // Ensure it doesn't go below 8 cars
+    setVisibleCars(newVisibleCars); // Update the state to show fewer cars
+    setShowLess(false); // Hide the "Show Less" button after it reaches 8
   };
 
   return (
@@ -168,14 +188,13 @@ const CarRecommendationPage = () => {
 
               <div>
                 <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
-                <Link href={`/payment?carId=${car._id}&carName=${car.name}&carPrice=${car.pricePerDay}`}>
-                  <button
-                    className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-                    aria-label={`Rent ${car.name} now`}
-                  >
-                    Rent Now
-                  </button>
-                </Link>
+                <button
+                  onClick={() => addToCart(car)}
+                  className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+                  aria-label={`Add ${car.name} to cart`}
+                >
+                  Add To Cart
+                </button>
               </div>
             </div>
           ))
