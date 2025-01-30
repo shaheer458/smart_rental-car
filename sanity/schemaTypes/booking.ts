@@ -3,64 +3,74 @@ export default {
   title: 'Booking',
   type: 'document',
   fields: [
-    { name: 'fullName', title: 'Full Name', type: 'string' },
-    { name: 'email', title: 'Email', type: 'string' },
-    { name: 'phone', title: 'Phone', type: 'string' },
-    { name: 'carModel', title: 'Car Model', type: 'string' },
-    { name: 'rentalDuration', title: 'Rental Duration (Days)', type: 'number' },
-    { name: 'rentalStartDate', title: 'Rental Start Date', type: 'date' },
-    { name: 'rentalEndDate', title: 'Rental End Date', type: 'date' },
-    { name: 'pickupLocation', title: 'Pickup Location', type: 'string' },
-    { name: 'pickupTime', title: 'Pickup Time', type: 'string' },
-    { name: 'totalCost', title: 'Total Cost', type: 'number' },
-    { name: 'paymentType', title: 'Payment Type', type: 'string' }, // Online or Offline
-
-    // Online payment fields
+    {
+      name: 'name',
+      title: 'Name',
+      type: 'string', // To capture the customer's name
+    },
+    {
+      name: 'email',
+      title: 'Email',
+      type: 'string', // To capture the customer's email
+    },
+    {
+      name: 'contact',
+      title: 'Contact Number',
+      type: 'string', // To capture the customer's contact number
+    },
+    {
+      name: 'location',
+      title: 'Location',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Nawabshah', value: 'Nawabshah' },
+          { title: 'Sakrand', value: 'Sakrand' },
+          { title: 'Saeedabad', value: 'Saeedabad' },
+          { title: 'Hala', value: 'Hala' },
+          { title: 'Hyderabad', value: 'Hyderabad' },
+        ], // The options that will be shown for location selection
+      },
+    },
     {
       name: 'paymentMethod',
       title: 'Payment Method',
       type: 'string',
       options: {
         list: [
-          { title: 'Credit Card', value: 'creditCard' },
-          { title: 'JazzCash', value: 'jazzcash' },
-          { title: 'EasyPaisa', value: 'easypaisa' },
-        ],
+          { title: 'Online Payment', value: 'online' },
+          { title: 'C.O.D Payment', value: 'offline' },
+        ], // Options for payment method
       },
     },
     {
-      name: 'creditCardDetails',
-      title: 'Credit Card Details',
-      type: 'object',
-      fields: [
-        { name: 'cardNumber', title: 'Card Number', type: 'string' },
-        { name: 'expiryDate', title: 'Expiry Date', type: 'string' },
-        { name: 'cvv', title: 'CVV', type: 'string' },
-      ],
+      name: 'paymentOption',
+      title: 'Payment Option',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Easypaisa', value: 'easypaisa' },
+          { title: 'JazzCash', value: 'jazzcash' },
+        ], // Options for payment services under 'online' payment method
+      },
+      hidden: ({parent} : any) => parent?.paymentMethod !== 'online', // Only show if 'online' payment method is selected
     },
     {
-      name: 'paymentDetails',
-      title: 'Payment Details',
-      type: 'object',
-      fields: [
-        { name: 'jazzCashDetails', title: 'JazzCash Details', type: 'string' },
-        { name: 'easyPaisaDetails', title: 'EasyPaisa Details', type: 'string' },
-      ],
+      name: 'paymentNumber',
+      title: 'Payment Number',
+      type: 'string',
+      hidden: ({parent} : any) => parent?.paymentMethod !== 'online' || !parent?.paymentOption, // Show only if paymentOption is selected
+    },
+    {
+      name: 'carData',
+      title: 'Car Data',
+      type: 'array', // To store an array of selected cars
+      of: [{ type: 'reference', to: [{ type: 'carDataTypes' }] }], // Reference to car data types (make sure 'carDataTypes' is defined)
+    },
+    {
+      name: 'totalPrice',
+      title: 'Total Price',
+      type: 'number', // To capture the total booking price
     },
   ],
-
-  preview: {
-    select: {
-      title: 'fullName',
-      subtitle: 'carModel',
-      date: 'rentalStartDate',
-    },
-    prepare(selection : any) {
-      const { title, subtitle, date } = selection;
-      return {
-        title: `${title} - ${subtitle}`,
-        subtitle: `${date ? new Date(date).toLocaleDateString() : ''}`,
-      };
-    },
-  },
 };
