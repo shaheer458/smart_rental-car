@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { RiSearch2Line } from "react-icons/ri";
-import { IoHome, IoHeartSharp, IoGridSharp } from 'react-icons/io5'; 
+import { IoHome, IoHeartSharp, IoGridSharp, IoCartSharp } from 'react-icons/io5'; 
 import { FaUserShield } from 'react-icons/fa';
 import Link from 'next/link';
 
@@ -10,6 +10,7 @@ export default function Header() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Add login state
+  const [cartCount, setCartCount] = useState(0); // Add cart count state
 
   const profile = '/path/to/your/profile-image.jpg'; // Replace this with the actual path
 
@@ -92,6 +93,18 @@ export default function Header() {
             <div className="relative group w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
               <IoGridSharp className="text-xl text-gray-600" />
               <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 text-sm text-gray-600">Categories</span>
+            </div>
+          </Link>
+
+          <Link href="/cart" aria-label="Go to Cart">
+            <div className="relative group w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
+              <IoCartSharp className="text-xl text-gray-600" />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
+              <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 opacity-0 group-hover:opacity-100 text-sm text-gray-600">Cart</span>
             </div>
           </Link>
 
