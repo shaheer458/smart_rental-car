@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { client } from "@/sanity/lib/client"; // Import Sanity client
 import Link from "next/link";
-import Image from "next/image"; // Import Next.js Image component for optimization
+import Image from "next/image";
 
 // Define the type for Car data
 interface Car {
@@ -21,6 +21,7 @@ const PopularPage = () => {
   const [cars, setCars] = useState<Car[]>([]); // Store car data
   const [loading, setLoading] = useState<boolean>(true); // Loading state
   const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({}); // Manage favorites
+  const [cart, setCart] = useState<Car[]>([]); // Cart state
 
   // Fetch popular cars data from Sanity CMS
   useEffect(() => {
@@ -50,21 +51,32 @@ const PopularPage = () => {
 
     // Load favorites from localStorage
     const savedFavorites = JSON.parse(localStorage.getItem("favorites") || "{}");
-    setFavorites(savedFavorites); // Set initial favorites state
+    setFavorites(savedFavorites);
+
+    // Load cart from localStorage
+    const savedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCart(savedCart);
   }, []);
 
-  // Toggle favorite status
+  // Function to toggle favorite status
   const handleFavoriteToggle = (carId: string) => {
     const updatedFavorites = { ...favorites, [carId]: !favorites[carId] };
     setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites)); // Save to localStorage
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  };
+
+  // ✅ Function to add a car to the cart
+  const addToCart = (car: Car) => {
+    const updatedCart = [...cart, car]; // Add the car to cart state
+    setCart(updatedCart); // Update state
+    localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save to localStorage
+    alert(`${car.name} has been added to the cart!`); // Show confirmation
   };
 
   return (
     <div className="p-6 bg-gray-100">
       <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8">Popular Cars</h2>
 
-      {/* Show loading message or car grid */}
       {loading ? (
         <p className="text-center text-gray-500">Loading cars...</p>
       ) : (
@@ -73,27 +85,24 @@ const PopularPage = () => {
             <div key={car._id} className="border rounded-lg p-4 bg-white shadow-lg">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold mt-4">{car.name}</h3>
-                <div
-                  className="cursor-pointer"
-                  onClick={() => handleFavoriteToggle(car._id)}
-                >
+                <div className="cursor-pointer" onClick={() => handleFavoriteToggle(car._id)}>
                   <Image
                     src={favorites[car._id] ? "/love4.png" : "/love5.png"}
                     alt="Heart Icon"
-                    width={24} // Set the width of the heart icon
-                    height={24} // Set the height of the heart icon
+                    width={24}
+                    height={24}
                   />
                 </div>
                 {favorites[car._id] && <span className="text-sm text-red-500 font-semibold">Favourite</span>}
               </div>
               <p className="text-sm text-gray-600">{car.type}</p>
 
-              {/* Use Next.js Image component for better optimization */}
+              {/* Optimized Image */}
               <Image
                 src={car.image_url}
                 alt={car.name}
-                width={500}  // Specify width
-                height={300} // Specify height
+                width={500}
+                height={300}
                 className="w-full h-22 object-cover rounded-t-lg"
               />
 
@@ -135,17 +144,17 @@ const PopularPage = () => {
   </div>
 </div>
 
-
               <div>
                 <p className="text-sm text-black font-bold">Price per Day: {car.pricePerDay}</p>
-                <Link href={`/payment?carId=${car._id}&carName=${car.name}&carPrice=${car.pricePerDay}`}>
-                  <button
-                    className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-                    aria-label={`Rent ${car.name} now`}
-                  >
-                    Rent Now
-                  </button>
-                </Link>
+                
+                {/* ✅ Corrected Add to Cart Button */}
+                <button
+                  onClick={() => addToCart(car)}
+                  className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+                  aria-label={`Add ${car.name} to cart`}
+                >
+                  Add To Cart
+                </button>
               </div>
             </div>
           ))}
