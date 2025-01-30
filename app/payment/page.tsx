@@ -16,7 +16,7 @@ interface Car {
   rentalDuration: number;
 }
 
-const CheckoutPage = () => {
+const Payment = () => {
   const searchParams = useSearchParams();
   const initialCart = JSON.parse(searchParams.get('cart') || '[]') as Car[];
   const initialTotalPrice = searchParams.get('totalPrice') || '0';
@@ -231,4 +231,4 @@ const CheckoutPage = () => {
   );
 };
 
-export default CheckoutPage;
+export default Payment;
