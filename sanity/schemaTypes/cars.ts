@@ -7,18 +7,19 @@ export default {
       name: 'name',
       type: 'string',
       title: 'Car Name',
+      description: 'Name of the car (e.g., Tesla Model S, Honda Civic)',
     },
     {
       name: 'brand',
       type: 'string',
       title: 'Brand',
-      description: 'Brand of the car (e.g., Nissan, Tesla, etc.)',
+      description: 'Brand of the car (e.g., Nissan, Tesla, Honda)',
     },
     {
       name: 'type',
       type: 'string',
       title: 'Car Type',
-      description: 'Type of the car (e.g., Sport, Sedan, SUV, etc.)',
+      description: 'Type of the car (e.g., Sport, Sedan, SUV, Electric)',
     },
     {
       name: 'fuelCapacity',
@@ -26,7 +27,7 @@ export default {
       title: 'Fuel Capacity',
       description: 'Fuel capacity or battery capacity (e.g., 90L, 100kWh)',
       initialValue: 'Not specified',  // Default value
-    },    
+    },
     {
       name: 'transmission',
       type: 'string',
@@ -41,13 +42,13 @@ export default {
     },
     {
       name: 'pricePerDay',
-      type: 'string',
+      type: 'number',  // Changed to 'number' for correct pricing
       title: 'Price Per Day',
-      description: 'Rental price per day',
+      description: 'Rental price per day (e.g., $50/day)',
     },
     {
       name: 'originalPrice',
-      type: 'string',
+      type: 'number',  // Changed to 'number' for correct pricing
       title: 'Original Price',
       description: 'Original price before discount (if applicable)',
     },
@@ -66,8 +67,9 @@ export default {
       type: 'image',
       title: 'Car Image',
       options: {
-        hotspot: true
-      }
-    }
+        hotspot: true,
+      },
+      description: 'Image of the car',
+    },
   ],
 };
