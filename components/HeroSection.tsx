@@ -15,7 +15,7 @@ const HeroSection = () => {
           </div>
 
           {/* Corrected Link & Button usage */}
-          <Link href="/payment">
+          <Link href="#">
             <button
               className="bg-blue-700 text-white font-semibold px-4 py-2 rounded-md mt-6 self-start hover:bg-blue-800 transition duration-300"
               aria-label="Go to Rental Car page"
@@ -42,7 +42,7 @@ const HeroSection = () => {
           </div>
 
           {/* Corrected Link & Button usage */}
-          <Link href="/payment">
+          <Link href="#">
             <button
               className="bg-blue-300 text-white font-semibold px-4 py-2 rounded-md mt-6 self-start hover:bg-blue-400 transition duration-300"
               aria-label="Go to Rental Car page"

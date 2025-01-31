@@ -1,391 +1,288 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { client } from '@/sanity/lib/client'; // Import the Sanity client
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import { client } from '@/sanity/lib/client';
 
-const CarRentalPayment = () => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [carModel, setCarModel] = useState<'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport' | ''>('');
-  const [rentalDuration, setRentalDuration] = useState(1);
-  const [creditCard, setCreditCard] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [totalCost, setTotalCost] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [jazzCashDetails, setJazzCashDetails] = useState('');
-  const [easyPaisaDetails, setEasyPaisaDetails] = useState('');
-  const [message, setMessage] = useState('');
-  const [rentalStartDate, setRentalStartDate] = useState<string>('');
-  const [rentalEndDate, setRentalEndDate] = useState<string>('');
+interface Car {
+  _id: string;
+  name: string;
+  pricePerDay: string;
+  image_url: string;
+  fuelCapacity: string;
+  transmission: string;
+  seatingCapacity: string;
+  rentalDuration: number;
+}
 
-  const carPrices: { [key in 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport']: number } = {
-    sedan: 50,
-    suv: 75,
-    convertible: 100,
-    pickup: 60,
-    diesel: 80,
-    electric: 90,
-    gasoline: 100,
-    hatchback: 70,
-    hybrid: 110,
-    sport: 120,
+const Payment = () => {
+  const searchParams = useSearchParams();
+  const initialCart = JSON.parse(searchParams.get('cart') || '[]') as Car[];
+  const initialTotalPrice = searchParams.get('totalPrice') || '0';
+
+  const [cart, setCart] = useState<Car[]>(initialCart); // State for cart items
+  const [totalPrice, setTotalPrice] = useState<string>(initialTotalPrice); // State for total price
+
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    contact: '',
+    location: '',
+    paymentMethod: 'online',
+    paymentOption: '',
+    paymentNumber: '',
+    startDate: '', // Added startDate
+    endDate: '',   // Added endDate
+    rentalDuration: 1, // Set a default rental duration
+  });
+
+  const [loading, setLoading] = useState(false); // Loading state for submit button
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setUserData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
-  // Calculate total based on selected car model and rental duration
-  useEffect(() => {
-    if (carModel && rentalDuration > 0) {
-      const pricePerDay = carPrices[carModel as 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport'];
-      setTotalCost(pricePerDay * rentalDuration);
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const startDate = e.target.value;
+    const rentalDuration = userData.rentalDuration;
+
+    setUserData((prevState) => ({
+      ...prevState,
+      startDate,
+      endDate: calculateEndDate(startDate, rentalDuration),
+    }));
+  };
+
+  const calculateEndDate = (startDate: string, rentalDuration: number): string => {
+    const start = new Date(startDate);
+    start.setDate(start.getDate() + rentalDuration); // Adding rental duration to start date
+    return start.toISOString().split('T')[0]; // Format it back to a date string (YYYY-MM-DD)
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevents page reload on form submit
+    setLoading(true); // Set loading state to true while submitting
+
+    if (userData.paymentMethod === 'offline' || (userData.paymentMethod === 'online' && userData.paymentOption && userData.paymentNumber)) {
+      const bookingData = {
+        name: userData.name,
+        email: userData.email,
+        contact: userData.contact,
+        location: userData.location,
+        paymentMethod: userData.paymentMethod,
+        paymentOption: userData.paymentOption,
+        paymentNumber: userData.paymentNumber,
+        startDate: userData.startDate,
+        endDate: userData.endDate,
+        carDetails: cart.map((car) => ({
+          name: car.name,
+          fuelCapacity: car.fuelCapacity,
+          transmission: car.transmission,
+          seatingCapacity: car.seatingCapacity,
+        })),
+        totalPrice: parseFloat(totalPrice),
+      };
+
+      try {
+        // Save the booking data to Sanity
+        await client.create({
+          _type: 'booking',
+          ...bookingData,
+        });
+
+        alert('Booking submitted successfully!');
+        
+        // Reset state after successful submission
+        setUserData({
+          name: '',
+          email: '',
+          contact: '',
+          location: '',
+          paymentMethod: 'online',
+          paymentOption: '',
+          paymentNumber: '',
+          startDate: '',
+          endDate: '',
+          rentalDuration: 1, // Reset rental duration to default value
+        });
+        setCart([]); // Clear the cart
+        setTotalPrice('0'); // Reset the total price
+      } catch (error) {
+        alert('There was an error submitting your booking.');
+      } finally {
+        setLoading(false); // Reset loading state after submission attempt
+      }
     } else {
-      setTotalCost(0);
+      alert('Please complete the payment details.');
+      setLoading(false); // Reset loading state if validation fails
     }
-  }, [carModel, rentalDuration]);
-
-  // Check car availability before booking
-  const checkCarAvailability = async (carModel: string, rentalStartDate: string, rentalEndDate: string) => {
-    const query = `*[_type == "booking" && carModel == $carModel && rentalStartDate <= $rentalEndDate && rentalEndDate >= $rentalStartDate]`;
-    const params = { carModel, rentalStartDate, rentalEndDate };
-    const existingBookings = await client.fetch(query, params);
-
-    return existingBookings.length === 0; // If no bookings exist for the given date range, the car is available
-  };
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-
-    // Validate form
-    if (!fullName || !email || !phone || !carModel || !rentalStartDate || !rentalEndDate || rentalDuration <= 0 || !paymentMethod) {
-      setMessage('Please fill in all required fields.');
-      return;
-    }
-
-    // Check if the car is available
-    const isCarAvailable = await checkCarAvailability(carModel, rentalStartDate, rentalEndDate);
-    if (!isCarAvailable) {
-      setMessage('The selected car is already booked for these dates. Please choose another car or adjust the rental period.');
-      return;
-    }
-
-    // Prepare payment details based on the selected method
-    let paymentDetails = {};
-    if (paymentMethod === 'creditCard') {
-      if (!creditCard || !expiryDate || !cvv) {
-        setMessage('Please provide all credit card details.');
-        return;
-      }
-      paymentDetails = { creditCardDetails: { cardNumber: creditCard, expiryDate, cvv } };
-    } else if (paymentMethod === 'jazzcash') {
-      if (!jazzCashDetails) {
-        setMessage('Please provide your JazzCash details.');
-        return;
-      }
-      paymentDetails = { jazzCashDetails };
-    } else if (paymentMethod === 'easypaisa') {
-      if (!easyPaisaDetails) {
-        setMessage('Please provide your EasyPaisa details.');
-        return;
-      }
-      paymentDetails = { easyPaisaDetails };
-    }
-
-    const bookingData = {
-      fullName,
-      email,
-      phone,
-      carModel,
-      rentalStartDate,
-      rentalEndDate,
-      rentalDuration,
-      paymentMethod,
-      totalCost,
-      ...paymentDetails,
-    };
-
-    try {
-      const result = await client.create({
-        _type: 'booking',
-        ...bookingData,
-      });
-      setMessage('Booking successful!');
-      console.log('Booking submitted:', result);
-
-      // Reset form fields after submission
-      setFullName('');
-      setEmail('');
-      setPhone('');
-      setCarModel('');
-      setRentalStartDate('');
-      setRentalEndDate('');
-      setRentalDuration(1);
-      setCreditCard('');
-      setExpiryDate('');
-      setCvv('');
-      setPaymentMethod('');
-      setJazzCashDetails('');
-      setEasyPaisaDetails('');
-      setTotalCost(0);
-    } catch (error) {
-      setMessage('Error submitting booking. Please try again later.');
-      console.error('Error submitting booking:', error);
-    }
-  };
-
-  // Update rental end date when rental start date or duration changes
-  const handleRentalStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRentalStartDate(e.target.value);
-    const startDate = new Date(e.target.value);
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + rentalDuration);
-    setRentalEndDate(endDate.toISOString().split('T')[0]);
-  };
-
-  const handleRentalDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const duration = Number(e.target.value);
-    setRentalDuration(duration);
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Car Rental Payment</h1>
-      <form onSubmit={handleSubmit}>
-        {/* Customer Information Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Customer Information</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700">Full Name</label>
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <h2 className="text-2xl font-bold text-gray-700 mb-6">Booking Form</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* User Information Fields */}
+        <input
+          type="text"
+          name="name"
+          placeholder="Your Name"
+          value={userData.name}
+          onChange={handleChange}
+          required
+          className="w-full p-3 border border-gray-300 rounded"
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          value={userData.email}
+          onChange={handleChange}
+          required
+          className="w-full p-3 border border-gray-300 rounded"
+        />
+        <input
+          type="text"
+          name="contact"
+          placeholder="Contact Number"
+          value={userData.contact}
+          onChange={handleChange}
+          required
+          className="w-full p-3 border border-gray-300 rounded"
+        />
+        <select
+          name="location"
+          value={userData.location}
+          onChange={handleChange}
+          required
+          className="w-full p-3 border border-gray-300 rounded"
+        >
+          <option value="">Select Location</option>
+          <option value="Nawabshah">Nawabshah</option>
+          <option value="Sakrand">Sakrand</option>
+          <option value="Saeedabad">Saeedabad</option>
+          <option value="Hala">Hala</option>
+          <option value="Hyderabad">Hyderabad</option>
+        </select>
+
+        {/* Payment Method Radio Buttons */}
+        <div className="flex space-x-4">
+          <label>
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="online"
+              checked={userData.paymentMethod === 'online'}
+              onChange={handleChange}
+            />
+            Online Payment
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="offline"
+              checked={userData.paymentMethod === 'offline'}
+              onChange={handleChange}
+            />
+            C.O.D Payment
+          </label>
+        </div>
+
+        {/* Online Payment Options */}
+        {userData.paymentMethod === 'online' && (
+          <>
+            <select
+              name="paymentOption"
+              value={userData.paymentOption}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border border-gray-300 rounded"
+            >
+              <option value="">Select Payment Method</option>
+              <option value="easypaisa">Easypaisa</option>
+              <option value="jazzcash">JazzCash</option>
+            </select>
+            {userData.paymentOption && (
               <input
                 type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                name="paymentNumber"
+                placeholder="Enter Payment Number"
+                value={userData.paymentNumber}
+                onChange={handleChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                className="w-full p-3 border border-gray-300 rounded"
               />
-            </div>
-            <div>
-              <label className="block text-gray-700">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
+            )}
+          </>
+        )}
+
+        {/* Rental Start Date */}
+        <label htmlFor="startDate">Rental Start Date</label>
+        <input
+          type="date"
+          name="startDate"
+          value={userData.startDate}
+          onChange={handleStartDateChange}
+          required
+          className="w-full p-3 border border-gray-300 rounded"
+        />
+
+        {/* Rental End Date (Automatically set) */}
+        <label htmlFor="endDate">Rental End Date</label>
+        <input
+          type="date"
+          name="endDate"
+          value={userData.endDate}
+          readOnly
+          className="w-full p-3 border border-gray-300 rounded bg-gray-200"
+        />
+
+        {/* Cart Items Display */}
+        <div className="mt-4">
+          {cart.map((car: Car) => (
+            <div key={car._id} className="border rounded-lg p-4 mb-4">
+              <Image
+                src={car.image_url}
+                alt={car.name}
+                width={500}
+                height={300}
+                className="w-32 h-auto object-cover rounded-lg"
               />
+              <h3 className="text-lg font-semibold mt-4">{car.name}</h3>
+              <p className="text-sm text-gray-600">Price per Day: {car.pricePerDay}</p>
+              <p className="text-sm text-gray-600">Rental Duration: {car.rentalDuration} Days</p>
+              <p className="text-sm text-gray-600">
+                Total Price for {car.rentalDuration} days: $
+                {parseFloat(car.pricePerDay.replace(/[^\d.-]/g, '')) * car.rentalDuration}
+              </p>
+              <p className="text-sm text-gray-600">Fuel Capacity: {car.fuelCapacity}</p>
+              <p className="text-sm text-gray-600">Transmission: {car.transmission}</p>
+              <p className="text-sm text-gray-600">Seating Capacity: {car.seatingCapacity}</p>
             </div>
-            <div>
-              <label className="block text-gray-700">Phone Number</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Car Selection Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Select Your Car</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700">Car Model</label>
-              <select
-                value={carModel}
-                onChange={(e) => setCarModel(e.target.value as 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport')}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              >
-                <option value="">--Select a Car--</option>
-                <option value="sedan">Sedan</option>
-                <option value="suv">SUV</option>
-                <option value="convertible">Convertible</option>
-                <option value="pickup">Pickup</option>
-                <option value="diesel">Diesel</option>
-                <option value="electric">Electric</option>
-                <option value="gasoline">Gasoline</option>
-                <option value="hatchback">Hatchback</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="sport">Sport</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-700">Rental Duration (Days)</label>
-              <input
-                type="number"
-                value={rentalDuration}
-                onChange={handleRentalDurationChange}
-                min="1"
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div>
-              <p className="text-gray-700">Price per day: ${carPrices[carModel as 'sedan' | 'suv' | 'convertible' | 'pickup' | 'diesel' | 'electric' | 'gasoline' | 'hatchback' | 'hybrid' | 'sport']}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Rental Date Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Rental Dates</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700">Rental Start Date</label>
-              <input
-                type="date"
-                value={rentalStartDate}
-                onChange={handleRentalStartDateChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">Rental End Date</label>
-              <input
-                type="date"
-                value={rentalEndDate}
-                readOnly
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Total Cost */}
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">Total Cost: ${totalCost.toFixed(2)}</h3>
-        </div>
-
-        {/* Payment Method Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Select Payment Method</h2>
-          <div className="space-y-4">
-            <div>
-              <input
-                type="radio"
-                id="creditCard"
-                name="paymentMethod"
-                value="creditCard"
-                checked={paymentMethod === 'creditCard'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mr-2"
-              />
-              <label htmlFor="creditCard" className="text-gray-700">Credit Card</label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                id="jazzcash"
-                name="paymentMethod"
-                value="jazzcash"
-                checked={paymentMethod === 'jazzcash'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mr-2"
-              />
-              <label htmlFor="jazzcash" className="text-gray-700">JazzCash</label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                id="easypaisa"
-                name="paymentMethod"
-                value="easypaisa"
-                checked={paymentMethod === 'easypaisa'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mr-2"
-              />
-              <label htmlFor="easypaisa" className="text-gray-700">EasyPaisa</label>
-            </div>
-          </div>
-
-          {/* Show Payment Details Based on Selected Method */}
-          {paymentMethod === 'creditCard' && (
-            <div>
-              <div>
-                <label className="block text-gray-700">Credit Card Number</label>
-                <input
-                  type="text"
-                  value={creditCard}
-                  onChange={(e) => setCreditCard(e.target.value)}
-                  required
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700">Expiry Date</label>
-                <input
-                  type="text"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  required
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700">CVV</label>
-                <input
-                  type="text"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                  required
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Other Payment Methods */}
-          {paymentMethod === 'jazzcash' && (
-            <div>
-              <div>
-                <label className="block text-gray-700">JazzCash Details</label>
-                <input
-                  type="text"
-                  value={jazzCashDetails}
-                  onChange={(e) => setJazzCashDetails(e.target.value)}
-                  required
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              </div>
-            </div>
-          )}
-
-          {paymentMethod === 'easypaisa' && (
-            <div>
-              <div>
-                <label className="block text-gray-700">EasyPaisa Details</label>
-                <input
-                  type="text"
-                  value={easyPaisaDetails}
-                  onChange={(e) => setEasyPaisaDetails(e.target.value)}
-                  required
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Submit Button */}
-        <div>
-          <button type="submit" className="w-full bg-blue-500 text-white py-3 rounded-lg">
-            Submit Booking
+        {/* Total Price */}
+        <div className="flex justify-between items-center mt-4">
+          <p className="text-xl font-semibold text-gray-700">Total Price: ${totalPrice}</p>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-500 text-white px-6 py-3 rounded disabled:bg-gray-400"
+          >
+            {loading ? 'Submitting...' : 'Submit Booking'}
           </button>
         </div>
       </form>
-
-      {/* Message */}
-      {message && (
-        <div className="mt-6 text-center text-lg text-gray-700">
-          {message}
-        </div>
-      )}
     </div>
   );
 };
 
-export default CarRentalPayment;
+export default Payment;
