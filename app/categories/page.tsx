@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { client } from '@/sanity/lib/client'; // Assuming you have Sanity client set up
@@ -23,6 +22,7 @@ const CategoriesPage = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null); // To handle errors
+  const [cart, setCart] = useState<Car[]>([]); // Cart to track added cars
 
   // Fetch all car types only once
   useEffect(() => {
@@ -85,6 +85,21 @@ const CategoriesPage = () => {
     }
   };
 
+  // Function to add a car to the cart
+  const addToCart = (car: Car) => {
+    const carExistsInCart = cart.some((item) => item._id === car._id);
+
+    if (carExistsInCart) {
+      alert(`${car.name} is already added to the Rent!`);
+      return;
+    }
+
+    const updatedCart = [...cart, car];
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    alert(`${car.name} has been added to the Rent!`);
+  };
+
   // Memoized Car Card to avoid unnecessary re-renders
   const CarCard: React.FC<{ car: Car }> = React.memo(({ car }) => (
     <div key={car._id} className="car-card bg-white p-4 rounded-lg shadow-md">
@@ -107,14 +122,13 @@ const CategoriesPage = () => {
       <p className="text-sm text-gray-600">Price per day: {car.pricePerDay}</p>
 
       <div className="text-center mt-4">
-        <Link href={`/payment?carId=${car._id}`}>
-          <button
-            className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-            aria-label={`Rent ${car.name} now`}
-          >
-            Rent Now
-          </button>
-        </Link>
+        <button
+          onClick={() => addToCart(car)}
+          className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+          aria-label={`Add ${car.name} to cart`}
+        >
+          Add to Rent
+        </button>
       </div>
     </div>
   ));
@@ -138,9 +152,7 @@ const CategoriesPage = () => {
 
   return (
     <div className="categories-page w-full flex flex-col items-center p-4">
-      <h1 className="text-2xl font-semibold mb-6"></h1>
       <h1 className="text-2xl font-semibold mb-6">Car Categories</h1>
-
 
       <div className="car-types flex flex-wrap gap-4 mb-8">{carTypesList}</div>
 

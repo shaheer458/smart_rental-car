@@ -1,96 +1,32 @@
 export default {
-  name: 'booking',
-  title: 'Booking',
-  type: 'document',
+  name: "booking",
+  type: "document",
+  title: "Booking",
   fields: [
+    { name: "name", type: "string", title: "Full Name" },
+    { name: "email", type: "string", title: "Email" },
+    { name: "contact", type: "string", title: "Contact Number" },
+    { name: "location", type: "string", title: "Location" },
+    { name: "paymentMethod", type: "string", title: "Payment Method" },
+    { name: "startDate", type: "date", title: "Rental Start Date" },
+    { name: "endDate", type: "date", title: "Rental End Date" },
+    { name: "totalPrice", type: "number", title: "Total Price" },
+    { name: "paymentIntentId", type: "string", title: "Stripe Payment Intent ID" },
     {
-      name: 'name',
-      title: 'Name',
-      type: 'string',
-    },
-    {
-      name: 'email',
-      title: 'Email',
-      type: 'string',
-    },
-    {
-      name: 'contact',
-      title: 'Contact Number',
-      type: 'string',
-    },
-    {
-      name: 'location',
-      title: 'Location',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Nawabshah', value: 'Nawabshah' },
-          { title: 'Sakrand', value: 'Sakrand' },
-          { title: 'Saeedabad', value: 'Saeedabad' },
-          { title: 'Hala', value: 'Hala' },
-          { title: 'Hyderabad', value: 'Hyderabad' },
-        ],
-      },
-    },
-    {
-      name: 'paymentMethod',
-      title: 'Payment Method',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Online Payment', value: 'online' },
-          { title: 'C.O.D Payment', value: 'offline' },
-        ],
-      },
-    },
-    {
-      name: 'paymentOption',
-      title: 'Payment Option',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Easypaisa', value: 'easypaisa' },
-          { title: 'JazzCash', value: 'jazzcash' },
-        ],
-      },
-      hidden: ({parent}: any) => parent?.paymentMethod !== 'online',
-    },
-    {
-      name: 'paymentNumber',
-      title: 'Payment Number',
-      type: 'string',
-      hidden: ({parent}: any) => parent?.paymentMethod !== 'online' || !parent?.paymentOption,
-    },
-    {
-      name: 'carDetails',
-      title: 'Car Details',
-      type: 'array',
+      name: "carDetails",
+      type: "array",
+      title: "Car Details",
       of: [
         {
-          type: 'object',
+          type: "object",
           fields: [
-            { name: 'name', title: 'Car Name', type: 'string' },
-            { name: 'fuelCapacity', title: 'Fuel Capacity', type: 'string' },
-            { name: 'transmission', title: 'Transmission', type: 'string' },
-            { name: 'seatingCapacity', title: 'Seating Capacity', type: 'string' },
+            { name: "name", type: "string", title: "Car Name" },
+            { name: "fuelCapacity", type: "string", title: "Fuel Capacity" },
+            { name: "transmission", type: "string", title: "Transmission" },
+            { name: "seatingCapacity", type: "string", title: "Seating Capacity" },
           ],
         },
       ],
-    },
-    {
-      name: 'totalPrice',
-      title: 'Total Price',
-      type: 'number',
-    },
-    {
-      name: 'startDate',
-      title: 'Start Date',
-      type: 'string', // Store as string or use a date type
-    },
-    {
-      name: 'endDate',
-      title: 'End Date',
-      type: 'string', // Store as string or use a date type
     },
   ],
 };

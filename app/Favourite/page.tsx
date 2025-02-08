@@ -5,13 +5,25 @@ import { client } from "@/sanity/lib/client"; // Import Sanity client
 import Link from "next/link";
 import Image from "next/image"; // Import Image from next/image for better image optimization
 
+interface Car {
+  _id: string;
+  name: string;
+  type: string;
+  fuelCapacity: string;
+  transmission: string;
+  seatingCapacity: string;
+  pricePerDay: string;
+  image_url: string;
+}
+
 const FavoritesPage = () => {
   const [favorites, setFavorites] = useState<string[]>([]); // Store favorite car ids
-  const [favoriteCarsData, setFavoriteCarsData] = useState<any[]>([]); // Store actual car data
+  const [favoriteCarsData, setFavoriteCarsData] = useState<Car[]>([]); // Store actual car data
   const [loading, setLoading] = useState<boolean>(false); // Track loading state
   const [error, setError] = useState<string | null>(null); // Store error message
   const [page, setPage] = useState<number>(1); // Page for pagination
   const [carsPerPage] = useState<number>(6); // Number of cars to load per page
+  const [cart, setCart] = useState<Car[]>([]); // Cart state to track added cars
 
   // Fetch favorite car IDs from localStorage and store them
   useEffect(() => {
@@ -76,8 +88,26 @@ const FavoritesPage = () => {
     fetchFavoriteCars();
   }, [favorites, page, carsPerPage]); // Added carsPerPage as a dependency
 
+  // Function to add a car to the cart
+  const addToCart = (car: Car) => {
+    // Check if the car is already in the cart
+    const carExistsInCart = cart.some((item) => item._id === car._id);
+
+    if (carExistsInCart) {
+      // Show an alert or message if the car is already in the cart
+      alert(`${car.name} is already added to the Rent!`);
+      return; // Prevent adding the car again
+    }
+
+    // If the car is not in the cart, add it
+    const updatedCart = [...cart, car];
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    alert(`${car.name} has been added to the Rent!`);
+  };
+
   // Memoized function to render each car (use React.memo for child components)
-  const CarCard = React.memo(({ car }: { car: any }) => (
+  const CarCard = React.memo(({ car, onAddToCart }: { car: Car, onAddToCart: (car: Car) => void }) => (
     <div key={car._id} className="border rounded-lg p-4 bg-white shadow-lg">
       <h3 className="text-lg font-semibold mt-4">{car.name}</h3>
       <Image
@@ -131,14 +161,13 @@ const FavoritesPage = () => {
 
       {/* "Rent Now" button now properly uses car details */}
       <div className="text-center mt-4">
-        <Link href={`/payment?carId=${car._id}`}>
-          <button
-            className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
-            aria-label={`Rent ${car.name} now`} // car is available here
-          >
-            Rent Now
-          </button>
-        </Link>
+        <button
+          onClick={() => onAddToCart(car)}
+          className="gap-2 self-start px-6 py-3 mt-1 text-base font-medium tracking-tight text-center text-white bg-[#3563E9] rounded min-h-[10px] w-[130px] whitespace-nowrap"
+          aria-label={`Add ${car.name} to cart`}
+        >
+          Add to Rent
+        </button>
       </div>
     </div>
   ));
@@ -148,8 +177,8 @@ const FavoritesPage = () => {
 
   // Memoized car components
   const carComponents = useMemo(() => {
-    return favoriteCarsData.map((car) => <CarCard key={car._id} car={car} />);
-  }, [favoriteCarsData, CarCard]);
+    return favoriteCarsData.map((car) => <CarCard key={car._id} car={car} onAddToCart={addToCart} />);
+  }, [favoriteCarsData]);
 
   // Pagination controls
   const handleLoadMore = useCallback(() => {
@@ -159,13 +188,10 @@ const FavoritesPage = () => {
   if (loading && favoriteCarsData.length === 0) {
     return <div className="text-center text-gray-500">Loading your favorite cars...</div>;
   }
-  
 
   return (
     <div className="p-6 bg-gray-100">
-      <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8"></h2>
       <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8">Your Favorite Cars</h2>
-
 
       {error ? (
         <p className="text-center text-red-500">{error}</p>
