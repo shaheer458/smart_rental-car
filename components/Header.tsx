@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { RiSearch2Line } from "react-icons/ri";
 import { IoHome, IoHeartSharp, IoGridSharp, IoCartSharp} from 'react-icons/io5';
-import { MdLocalShipping } from 'react-icons/md';
+// import { MdLocalShipping } from 'react-icons/md';
 
 // In JSX
 
@@ -120,12 +120,6 @@ export default function Header() {
             {cartCount}
           </span>
         )}
-      </div>
-    </Link>
-
-    <Link href="/shipment" aria-label="Go to Shipment">
-      <div className="relative group w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
-        <MdLocalShipping className="text-xl text-gray-600" />
       </div>
     </Link>
 

@@ -73,7 +73,7 @@ const CartPage = () => {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h2 className="text-2xl font-bold text-gray-700 mb-6">Your Rent Cart</h2>
+      <h2 className="text-2xl font-bold text-gray-700 mb-6 mt-12">Your Rent Cart</h2>
 
       {cart.length === 0 ? (
         <p className="text-gray-500">Your cart is empty.</p>

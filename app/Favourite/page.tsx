@@ -191,7 +191,7 @@ const FavoritesPage = () => {
 
   return (
     <div className="p-6 bg-gray-100">
-      <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8">Your Favorite Cars</h2>
+            <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mt-12 mb-6">Your Favorite Cars</h2>
 
       {error ? (
         <p className="text-center text-red-500">{error}</p>

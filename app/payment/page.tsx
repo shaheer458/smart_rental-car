@@ -1,15 +1,7 @@
-
 "use client";
 
-import React, { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
 import { client } from "@/sanity/lib/client";
-// import { Elements, useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
-// import { loadStripe } from "@stripe/stripe-js";
-import convertToSubcurrency from "@/lib/convertToSubcurrency";
-
-// Load Stripe.js instance (COMMENTED OUT)
-// const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
 
 interface Car {
   _id: string;
@@ -22,21 +14,26 @@ interface Car {
   rentalDuration: number;
 }
 
-const CheckoutForm = ({ totalPrice, cart, userData, setUserData }: { totalPrice: string, cart: Car[], userData: any, setUserData: any }) => {
-  // const stripe = useStripe();
-  // const elements = useElements();
-
+const CheckoutForm = ({
+  totalPrice,
+  cart,
+  userData,
+  setUserData,
+}: {
+  totalPrice: string;
+  cart: Car[];
+  userData: any;
+  setUserData: any;
+}) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setUserData((prevState: any) => ({ ...prevState, [name]: value }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -44,7 +41,6 @@ const CheckoutForm = ({ totalPrice, cart, userData, setUserData }: { totalPrice:
     setSuccessMessage(null);
 
     try {
-      // Step 1: Store Booking Data in Sanity
       const bookingData = {
         _type: "booking",
         name: userData.name,
@@ -69,10 +65,11 @@ const CheckoutForm = ({ totalPrice, cart, userData, setUserData }: { totalPrice:
 
       setSuccessMessage(`Thank you! Your booking has been confirmed.`);
 
-      // Redirect to payment2 page
       setTimeout(() => {
-        window.location.href = "/payment2";
-      }, 2000);
+        if (typeof window !== "undefined") {
+          window.location.href = "/payment2";
+        }
+      }, 1000);
     } catch (error: any) {
       console.error("❌ Error Storing Booking in Sanity:", error);
       setErrorMessage("Error: " + error.message);
@@ -112,8 +109,6 @@ const CheckoutForm = ({ totalPrice, cart, userData, setUserData }: { totalPrice:
         ))}
       </div>
 
-      {/* <PaymentElement /> (COMMENTED OUT) */}
-
       {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
       {successMessage && <p className="text-green-500 mt-2">{successMessage}</p>}
 
@@ -127,11 +122,9 @@ const CheckoutForm = ({ totalPrice, cart, userData, setUserData }: { totalPrice:
   );
 };
 
-const Payment = () => {
-  const searchParams = useSearchParams();
-  const initialCart = JSON.parse(searchParams.get("cart") || "[]") as Car[];
-  const initialTotalPrice = searchParams.get("totalPrice") || "0";
-
+const PaymentContent = () => {
+  const [cart, setCart] = useState<Car[]>([]);
+  const [totalPrice, setTotalPrice] = useState("0");
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -143,13 +136,33 @@ const Payment = () => {
     rentalDuration: 1,
   });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+
+      try {
+        const cartData = JSON.parse(searchParams.get("cart") || "[]") as Car[];
+        setCart(cartData);
+        setTotalPrice(searchParams.get("totalPrice") || "0");
+      } catch (error) {
+        console.error("Error parsing cart data:", error);
+      }
+    }
+  }, []);
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h2 className="text-2xl font-bold text-gray-700 mb-6">Booking Form</h2>
-      {/* <Elements stripe={stripePromise} options={{ clientSecret }}> (COMMENTED OUT) */}
-        <CheckoutForm totalPrice={initialTotalPrice} cart={initialCart} userData={userData} setUserData={setUserData} />
-      {/* </Elements> */}
+      <CheckoutForm totalPrice={totalPrice} cart={cart} userData={userData} setUserData={setUserData} />
     </div>
+  );
+};
+
+const Payment = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentContent />
+    </Suspense>
   );
 };
 

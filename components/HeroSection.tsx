@@ -8,6 +8,8 @@ const HeroSection = () => {
       <div className="container mx-auto px-6 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
         
         {/* Left Card */}
+            <h2 className="text-2xl font-bold"></h2>
+            <h2 className="text-2xl font-bold"></h2>
         <div className="bg-blue-500 text-white rounded-lg p-6 flex flex-col justify-between relative">
           <div>
             <h2 className="text-2xl font-bold">The Best Platform for Car Rental</h2>

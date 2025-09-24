@@ -3,27 +3,19 @@ import React, { useEffect, useState } from "react";
 import { client } from "@/sanity/lib/client";
 
 // Sidebar Component
-const Sidebar = ({ onLogout }: { onLogout: () => void }) => (
-  <div>
-    <div className="w-full bg-gray-800 text-white p-4 top-[110px] left-0 z-50 h-auto sm:h-24 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-      <h2 className="text-2xl text-center mt-3 sm:text-left">Admin Panel</h2>
-      <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center justify-center sm:justify-end w-full sm:w-auto">
-        <li>
-          <a href="/dashboard" className="text-white">Dashboard</a>
+const Sidebar = ({ onLogout, setActiveSection }: { onLogout: () => void, setActiveSection: (section: string) => void }) => (
+  <div className="w-full bg-gray-800 text-white p-4 fixed top-0 left-0 z-50 sm:relative flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <h2 className="text-2xl text-center sm:text-left">Admin Panel</h2>
+    <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center justify-center sm:justify-end w-full sm:w-auto mt-2 sm:mt-0">
+      {["dashboard", "bookings", "cars"].map((section) => (
+        <li key={section}>
+          <button onClick={() => setActiveSection(section)} className="text-white text-lg">{section.charAt(0).toUpperCase() + section.slice(1)}</button>
         </li>
-        <li>
-          <a href="/dashboard" className="text-white">Bookings</a>
-        </li>
-        <li>
-          <a href="/dashboard" className="text-white">Car Data</a>
-        </li>
-        <li>
-          <button onClick={onLogout} className="bg-red-500 text-white py-2 px-6 rounded block sm:text-left">
-            Logout
-          </button>
-        </li>
-      </ul>
-    </div>
+      ))}
+      <li>
+        <button onClick={onLogout} className="bg-red-500 text-white py-2 px-6 rounded w-full sm:w-auto">Logout</button>
+      </li>
+    </ul>
   </div>
 );
 
@@ -31,9 +23,11 @@ const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
   const [cars, setCars] = useState<any[]>([]);
-  const [loadingBookings, setLoadingBookings] = useState(true);
   const [loadingCars, setLoadingCars] = useState(true);
-
+  const [activeSection, setActiveSection] = useState("dashboard");
+  const [dailyBookings, setDailyBookings] = useState(0);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  
   const [carData, setCarData] = useState({
     name: "",
     brand: "",
@@ -47,7 +41,26 @@ const Dashboard = () => {
     tags: [],
     image: null,
   });
-
+  const fetchDailyBookings = async () => {
+    try {
+      setLoadingBookings(true);
+      const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+  
+      // Query Sanity for bookings made today
+      const query = `*[_type == 'booking' && bookingDate >= '${today}T00:00:00' && bookingDate <= '${today}T23:59:59']{email}`;
+      const bookings = await client.fetch(query);
+  
+      // Count unique users based on email
+      const uniqueUsers = new Set(bookings.map((b : any) => b.email));
+      setDailyBookings(uniqueUsers.size);
+  
+      setLoadingBookings(false);
+    } catch (error) {
+      console.error("Error fetching daily bookings:", error);
+      setLoadingBookings(false);
+    }
+  };
+  
   const [bookingData, setBookingData] = useState({
     fullName: "",
     email: "",
@@ -193,7 +206,18 @@ const Dashboard = () => {
       console.error("Error deleting car:", error);
     }
   };
-
+  useEffect(() => {
+    const isAdmin = localStorage.getItem("admin");
+    if (isAdmin !== "true") {
+      window.location.href = "/login";
+    } else {
+      setIsAuthenticated(true);
+      fetchBookings();
+      fetchCars();
+      fetchDailyBookings(); // Fetch daily bookings
+    }
+  }, []);
+  
   const handleBookingDelete = async (bookingId: string) => {
     try {
       await client.delete(bookingId);
@@ -204,13 +228,22 @@ const Dashboard = () => {
   };
 
   return isAuthenticated ? (
-    <div className="pt-16 w-full p-6">
-      <Sidebar onLogout={handleLogout} />
+    <div className="pt-24 px-4 sm:px-8 w-full">
+      <Sidebar onLogout={handleLogout} setActiveSection={setActiveSection} />
 
-      <h1 className="text-3xl mb-4">Admin Dashboard</h1>
+      {activeSection === "dashboard" && (
+        <div className="mt-6 p-4 bg-gray-100 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-2">Todays Activity</h2>
+          {loadingBookings ? <p>Loading...</p> : <p className="text-lg">Users Who Booked Today: {dailyBookings}</p>}
+        </div>
+      )}
+
+
 
       {/* Add New Car Section */}
-      <h2 className="text-xl mb-4 mt-4">Add New Car</h2>
+      {activeSection === "cars" && (
+        <>
+        <h2 className="text-xl mb-4 mt-4">Add New Car</h2>
       <form onSubmit={handleCarSubmit} className="mb-6 space-y-4">
         <input
           type="text"
@@ -310,7 +343,8 @@ const Dashboard = () => {
       {loadingCars ? (
         <div>Loading cars...</div>
       ) : (
-        <table className="table-auto w-full border-collapse border">
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full border-collapse border text-sm sm:text-base">
           <thead>
             <tr>
               <th className="border px-4 py-2">Car Name</th>
@@ -351,14 +385,20 @@ const Dashboard = () => {
             ))}
           </tbody>
         </table>
+        </div>
+      )}
+        </>
       )}
 
       {/* Booking Data Table */}
-<h2 className="text-xl mb-4 mt-4">Bookings</h2>
+      {activeSection === "bookings" && (
+        <>
+        <h2 className="text-xl mb-4 mt-4">Bookings</h2>
 {loadingBookings ? (
   <div>Loading bookings...</div>
 ) : (
-  <table className="table-auto w-full border-collapse border">
+  <div className="overflow-x-auto">
+    <table className="table-auto w-full border-collapse border text-sm sm:text-base">
     <thead>
       <tr>
         <th className="border px-4 py-2">Name</th>
@@ -414,7 +454,10 @@ const Dashboard = () => {
       ))}
     </tbody>
   </table>
+  </div>
 )}
+        </>
+      )}
 
     </div>
   ) : (

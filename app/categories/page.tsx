@@ -152,7 +152,7 @@ const CategoriesPage = () => {
 
   return (
     <div className="categories-page w-full flex flex-col items-center p-4">
-      <h1 className="text-2xl font-semibold mb-6">Car Categories</h1>
+      <h1 className="text-2xl font-semibold mb-6 mt-14">Car Categories</h1>
 
       <div className="car-types flex flex-wrap gap-4 mb-8">{carTypesList}</div>
 
