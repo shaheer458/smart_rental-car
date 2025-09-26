@@ -277,7 +277,18 @@ export default function AgentChatAndPayment() {
       )}
 
       {open && (
-        <div className="w-[400px] h-[500px] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        <div
+      className="
+        fixed inset-0   /* mobile: full screen */
+        sm:inset-auto  /* tablet/desktop: shift to corner */
+        sm:bottom-6 sm:right-6
+        sm:w-[60%] sm:h-[60%]
+        md:w-[400px] md:h-[500px]
+        bg-white
+        rounded-none sm:rounded-xl md:rounded-2xl
+        shadow-xl flex flex-col overflow-hidden
+      "
+    >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white font-semibold">
             SmartCar Agent
