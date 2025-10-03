@@ -1,18 +1,27 @@
-"use client"; // Mark this as a client component
+"use client"; // Client component
 
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { client } from "@/sanity/lib/client"; // Import the Sanity client
 import Link from "next/link";
 import Head from "next/head"; // Import Head for dynamic page title
 import Image from "next/image"; // Import Image for optimization
 
 // ✅ Proper type for params
+=======
+import { client } from "@/sanity/lib/client";
+import Link from "next/link";
+import Head from "next/head";
+import Image from "next/image";
+
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
 interface CarDetailsPageProps {
   params: {
     id: string;
   };
 }
 
+<<<<<<< HEAD
 const CarDetailsPage: React.FC<CarDetailsPageProps> = ({ params }) => {
   const [car, setCar] = useState<any | null>(null); // Store car data
   const [loading, setLoading] = useState<boolean>(true); // Loading state
@@ -20,6 +29,14 @@ const CarDetailsPage: React.FC<CarDetailsPageProps> = ({ params }) => {
 
   useEffect(() => {
     console.log("Fetching data for car with ID:", params.id); // Log the ID
+=======
+const CarDetailsPage = ({ params }: CarDetailsPageProps) => {
+  const [car, setCar] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
     const fetchCarData = async () => {
       const query = `*[_type == "carDataTypes" && _id == $id] {
         _id,
@@ -34,34 +51,44 @@ const CarDetailsPage: React.FC<CarDetailsPageProps> = ({ params }) => {
 
       try {
         const data = await client.fetch(query, { id: params.id });
+<<<<<<< HEAD
         console.log("Car data fetched:", data); // Log the fetched data
+=======
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
         if (data.length > 0) {
-          setCar(data[0]); // Set the car data if found
+          setCar(data[0]);
         } else {
-          setCar(null); // If no data, set car to null
+          setCar(null);
         }
+<<<<<<< HEAD
       } catch (error) {
         console.error("Error fetching car data:", error);
+=======
+      } catch (err) {
+        console.error("Error fetching car data:", err);
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
         setError("Failed to load car data. Please try again later.");
       } finally {
-        setLoading(false); // Set loading to false after the request is completed
+        setLoading(false);
       }
     };
 
-    fetchCarData(); // Fetch data using the id from params
-  }, [params.id]); // Depend on params.id
+    fetchCarData();
+  }, [params.id]);
 
   if (loading) return <p>Loading...</p>;
-
   if (error) return <p>{error}</p>;
-
   if (!car) return <p>Car not found</p>;
 
   return (
     <div className="p-6 h-full">
       <Head>
-        <title>{car.name} - Car Details</title> {/* Dynamic title for SEO */}
+        <title>{car.name} - Car Details</title>
       </Head>
+<<<<<<< HEAD
+=======
+
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
       <h2 className="text-xl font-bold text-slate-400 text-left ml-4 mb-8">
         {car.name}
       </h2>
@@ -76,9 +103,13 @@ const CarDetailsPage: React.FC<CarDetailsPageProps> = ({ params }) => {
               width={600}
               height={400}
               quality={75}
+<<<<<<< HEAD
               style={{ objectFit: "cover" }} // ✅ Fixed: Next.js Image uses style, not objectFit prop
               loading="lazy"
               className="rounded-lg"
+=======
+              className="rounded-lg object-cover"
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
             />
           </div>
           <h3 className="text-lg font-semibold">{car.name}</h3>
@@ -97,6 +128,10 @@ const CarDetailsPage: React.FC<CarDetailsPageProps> = ({ params }) => {
           <p className="text-sm text-gray-600">
             <strong>Price per Day:</strong> {car.pricePerDay}
           </p>
+<<<<<<< HEAD
+=======
+
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
           <div className="text-center mt-4">
             <Link href={`/payment?carId=${car._id}`}>
               <button
@@ -109,7 +144,11 @@ const CarDetailsPage: React.FC<CarDetailsPageProps> = ({ params }) => {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Car Details Side Section (Future expansion) */}
+=======
+        {/* Right side: More details (expandable later) */}
+>>>>>>> b04bb791b9098cb2e1a5ecd224201daff844630e
         <div className="w-full lg:w-2/3 lg:pl-6 mt-4 lg:mt-0"></div>
       </div>
     </div>
